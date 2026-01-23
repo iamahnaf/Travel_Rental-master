@@ -1,0 +1,448 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Card } from '@/components/ui/Card'
+import { CheckCircle, Users, Car, MapPin, Shield, UserCircle, Briefcase } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+
+export default function RegisterPage() {
+  const router = useRouter()
+  const [regPath, setRegPath] = useState<'traveler' | 'business' | null>(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    role: 'traveler' as 'traveler' | 'driver' | 'tour_guide' | 'car_owner' | 'hotel_owner' | 'admin',
+    // Business specific fields
+    businessName: '', // For hotels/cars
+    city: '',
+    address: '',
+    experienceYears: '',
+    specialties: '',
+    carBrand: '',
+    carModel: '',
+    carYear: '',
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {}
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required'
+    }
+    if (!formData.email) {
+      newErrors.email = 'Email is required'
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid'
+    }
+    if (!formData.password) {
+      newErrors.password = 'Password is required'
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters'
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
+    if (formData.phone && !/^\+?[\d-\s]{10,15}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number must be 10-15 digits'
+    }
+
+    // Business validation
+    if (regPath === 'business') {
+      if (formData.role === 'hotel_owner') {
+        if (!formData.businessName) newErrors.businessName = 'Hotel name is required'
+        if (!formData.city) newErrors.city = 'City is required'
+        if (!formData.address) newErrors.address = 'Address is required'
+      } else if (formData.role === 'car_owner') {
+        if (!formData.carBrand) newErrors.carBrand = 'Brand is required'
+        if (!formData.carModel) newErrors.carModel = 'Model is required'
+        if (!formData.carYear) newErrors.carYear = 'Year is required'
+      } else if (formData.role === 'driver') {
+        if (!formData.experienceYears) newErrors.experienceYears = 'Experience is required'
+        if (!formData.city) newErrors.city = 'City is required'
+      } else if (formData.role === 'tour_guide') {
+        if (!formData.specialties) newErrors.specialties = 'Specialties are required'
+        if (!formData.city) newErrors.city = 'City is required'
+      }
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const { register } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!validate()) return
+
+    setLoading(true)
+    try {
+      // Prepare user data, only include phone if it's provided
+      const userData: any = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        // Business data
+        businessData: regPath === 'business' ? {
+          businessName: formData.businessName,
+          city: formData.city,
+          address: formData.address,
+          experienceYears: formData.experienceYears,
+          specialties: formData.specialties,
+          carBrand: formData.carBrand,
+          carModel: formData.carModel,
+          carYear: formData.carYear,
+        } : null
+      };
+      
+      if (formData.phone.trim()) {
+        userData.phone = formData.phone;
+      }
+      
+      await register(userData);
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
+    } catch (error: any) {
+      console.error('Registration failed:', error);
+      setErrors({ submit: error.message || 'Registration failed. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Registration Successful!
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Redirecting to dashboard...
+          </p>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!regPath) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl w-full">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+              Create an Account
+            </h2>
+            <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+              Choose how you want to use the platform
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <button
+              onClick={() => {
+                setRegPath('traveler');
+                setFormData({ ...formData, role: 'traveler' });
+              }}
+              className="group p-8 bg-white dark:bg-gray-800 rounded-2xl border-2 border-transparent hover:border-primary-500 shadow-xl transition-all text-center"
+            >
+              <div className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <UserCircle className="w-10 h-10 text-primary-600 dark:text-primary-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Traveler</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                I want to book cars, hotels, and tours.
+              </p>
+            </button>
+
+            <button
+              onClick={() => {
+                setRegPath('business');
+                setFormData({ ...formData, role: 'driver' });
+              }}
+              className="group p-8 bg-white dark:bg-gray-800 rounded-2xl border-2 border-transparent hover:border-blue-500 shadow-xl transition-all text-center"
+            >
+              <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                <Briefcase className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Business</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                I want to offer my services or list properties.
+              </p>
+            </button>
+          </div>
+
+          <p className="mt-12 text-center text-gray-600 dark:text-gray-400">
+            Already have an account?{' '}
+            <Link
+              href="/login"
+              className="text-primary-600 dark:text-primary-400 hover:underline font-bold"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        <button
+          onClick={() => setRegPath(null)}
+          className="mb-8 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 flex items-center"
+        >
+          ← Back to selection
+        </button>
+
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            {regPath === 'traveler' ? 'Traveler Registration' : 'Business Registration'}
+          </h2>
+        </div>
+
+        <Card>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {regPath === 'business' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Business Type
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: 'driver' })}
+                    className={`p-3 rounded-lg border transition-all text-center ${
+                      formData.role === 'driver'
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    <div className="text-xs font-medium">Driver</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: 'tour_guide' })}
+                    className={`p-3 rounded-lg border transition-all text-center ${
+                      formData.role === 'tour_guide'
+                        ? 'border-green-600 bg-green-50 dark:bg-green-900/20'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    <div className="text-xs font-medium">Tour Guide</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: 'car_owner' })}
+                    className={`p-3 rounded-lg border transition-all text-center ${
+                      formData.role === 'car_owner'
+                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    <div className="text-xs font-medium">Car Owner</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: 'hotel_owner' })}
+                    className={`p-3 rounded-lg border transition-all text-center ${
+                      formData.role === 'hotel_owner'
+                        ? 'border-orange-600 bg-orange-50 dark:bg-orange-900/20'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    <div className="text-xs font-medium">Hotel Owner</div>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {regPath === 'business' && (
+              <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+                  {formData.role.replace('_', ' ')} Details
+                </h3>
+                
+                {formData.role === 'hotel_owner' && (
+                  <>
+                    <Input
+                      label="Hotel Name"
+                      value={formData.businessName}
+                      onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                      error={errors.businessName}
+                      placeholder="Grand Plaza Hotel"
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        label="City"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        error={errors.city}
+                        placeholder="Dhaka"
+                      />
+                      <Input
+                        label="Address"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        error={errors.address}
+                        placeholder="123 Street Name"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {formData.role === 'car_owner' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        label="Car Brand"
+                        value={formData.carBrand}
+                        onChange={(e) => setFormData({ ...formData, carBrand: e.target.value })}
+                        error={errors.carBrand}
+                        placeholder="Toyota"
+                      />
+                      <Input
+                        label="Model"
+                        value={formData.carModel}
+                        onChange={(e) => setFormData({ ...formData, carModel: e.target.value })}
+                        error={errors.carModel}
+                        placeholder="Corolla"
+                      />
+                    </div>
+                    <Input
+                      label="Year"
+                      type="number"
+                      value={formData.carYear}
+                      onChange={(e) => setFormData({ ...formData, carYear: e.target.value })}
+                      error={errors.carYear}
+                      placeholder="2022"
+                    />
+                  </>
+                )}
+
+                {formData.role === 'driver' && (
+                  <>
+                    <Input
+                      label="Years of Experience"
+                      type="number"
+                      value={formData.experienceYears}
+                      onChange={(e) => setFormData({ ...formData, experienceYears: e.target.value })}
+                      error={errors.experienceYears}
+                      placeholder="5"
+                    />
+                    <Input
+                      label="City"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      error={errors.city}
+                      placeholder="Dhaka"
+                    />
+                  </>
+                )}
+
+                {formData.role === 'tour_guide' && (
+                  <>
+                    <Input
+                      label="Specialties (comma separated)"
+                      value={formData.specialties}
+                      onChange={(e) => setFormData({ ...formData, specialties: e.target.value })}
+                      error={errors.specialties}
+                      placeholder="History, Nature, Food"
+                    />
+                    <Input
+                      label="City"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      error={errors.city}
+                      placeholder="Cox's Bazar"
+                    />
+                  </>
+                )}
+              </div>
+            )}
+
+            <div>
+              <Input
+                label="Full Name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                error={errors.name}
+                placeholder="John Doe"
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Email address"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                error={errors.email}
+                placeholder="you@example.com"
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Phone Number (Optional)"
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                error={errors.phone}
+                placeholder="1234567890"
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                error={errors.password}
+                placeholder="••••••••"
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Confirm Password"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                error={errors.confirmPassword}
+                placeholder="••••••••"
+              />
+            </div>
+
+{errors.submit && (
+              <div className="text-red-500 text-sm mb-4">
+                {errors.submit}
+              </div>
+            )}
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create account'}
+            </Button>
+          </form>
+        </Card>
+      </div>
+    </div>
+  )
+}
