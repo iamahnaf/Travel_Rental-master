@@ -201,11 +201,9 @@ export default function DriverDetailsPage() {
             </Card>
 
             {/* Reviews Section */}
-            {driver.reviews && driver.reviews.length > 0 && (
-              <div>
-                <Reviews reviews={driver.reviews} />
-              </div>
-            )}
+            <div>
+              <Reviews reviews={driver.reviews || []} />
+            </div>
           </div>
 
           {/* Right Column - Booking */}

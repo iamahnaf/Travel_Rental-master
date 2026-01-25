@@ -219,11 +219,9 @@ export default function TourGuideDetailsPage() {
             </Card>
 
             {/* Reviews Section */}
-            {guide.reviews && guide.reviews.length > 0 && (
-              <div>
-                <Reviews reviews={guide.reviews} />
-              </div>
-            )}
+            <div>
+              <Reviews reviews={guide.reviews || []} />
+            </div>
           </div>
 
           {/* Right Column - Booking */}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { mockDrivers } from '@/lib/mockData'
@@ -14,6 +14,7 @@ import { DriverSelection } from '@/components/DriverSelection'
 import { LicenseUpload } from '@/components/LicenseUpload'
 import { PromoCodeInput } from '@/components/PromoCodeInput'
 import { MapPicker } from '@/components/MapPickerWrapper'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function VehicleDetailsPage() {
   const params = useParams()
@@ -36,6 +37,27 @@ export default function VehicleDetailsPage() {
   const [destinationLocation, setDestinationLocation] = useState<{ lat: number; lng: number; address?: string } | null>(null)
   const [showMapPicker, setShowMapPicker] = useState(false)
   const [showDestMapPicker, setShowDestMapPicker] = useState(false)
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const [direction, setDirection] = useState(1) // 1 for next, -1 for prev
+
+  // Auto-slide effect
+  useEffect(() => {
+    if (!isAutoPlaying || !vehicle) return
+    
+    const images = vehicle.images ? JSON.parse(vehicle.images) : (vehicle.image_url ? [vehicle.image_url] : [])
+    if (images.length <= 1) return
+
+    const interval = setInterval(() => {
+      setDirection(1)
+      setCurrentImageIndex((prev) => (prev + 1) % images.length)
+    }, 4000) // Change image every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [isAutoPlaying, vehicle])
+
+  // Pause auto-play on hover
+  const handleMouseEnter = useCallback(() => setIsAutoPlaying(false), [])
+  const handleMouseLeave = useCallback(() => setIsAutoPlaying(true), [])
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -196,11 +218,41 @@ export default function VehicleDetailsPage() {
   }
 
   const nextImage = () => {
+    setDirection(1)
     setCurrentImageIndex((prev) => (prev + 1) % images.length)
+    setIsAutoPlaying(false)
+    setTimeout(() => setIsAutoPlaying(true), 5000) // Resume auto-play after 5 seconds
   }
 
   const prevImage = () => {
+    setDirection(-1)
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length)
+    setIsAutoPlaying(false)
+    setTimeout(() => setIsAutoPlaying(true), 5000)
+  }
+
+  const goToImage = (index: number) => {
+    setDirection(index > currentImageIndex ? 1 : -1)
+    setCurrentImageIndex(index)
+    setIsAutoPlaying(false)
+    setTimeout(() => setIsAutoPlaying(true), 5000)
+  }
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 300 : -300,
+      opacity: 0
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 300 : -300,
+      opacity: 0
+    })
   }
 
   return (
@@ -220,21 +272,41 @@ export default function VehicleDetailsPage() {
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-24">
               <Card className="p-0 overflow-hidden">
-              <div className="relative h-96 bg-gray-200 dark:bg-gray-700">
-                {images[currentImageIndex] ? (
-                  <Image
-                    src={images[currentImageIndex]}
-                    alt={`${vehicle.brand} ${vehicle.model} - Image ${currentImageIndex + 1}`}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                    <Car className="w-32 h-32" />
-                  </div>
-                )}
+              <div 
+                className="relative h-96 bg-gray-200 dark:bg-gray-700 overflow-hidden"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <AnimatePresence initial={false} custom={direction} mode="wait">
+                  <motion.div
+                    key={currentImageIndex}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{
+                      x: { type: "spring", stiffness: 300, damping: 30 },
+                      opacity: { duration: 0.2 }
+                    }}
+                    className="absolute inset-0"
+                  >
+                    {images[currentImageIndex] ? (
+                      <Image
+                        src={images[currentImageIndex]}
+                        alt={`${vehicle.brand} ${vehicle.model} - Image ${currentImageIndex + 1}`}
+                        fill
+                        className="object-cover"
+                        priority
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                        <Car className="w-32 h-32" />
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
                 {images.length > 1 && (
                   <>
                     <button
@@ -253,9 +325,9 @@ export default function VehicleDetailsPage() {
                       {images.map((_: any, i: number) => (
                         <button
                           key={i}
-                          onClick={() => setCurrentImageIndex(i)}
-                          className={`w-2 h-2 rounded-full ${
-                            i === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                          onClick={() => goToImage(i)}
+                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                            i === currentImageIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/75'
                           }`}
                         />
                       ))}

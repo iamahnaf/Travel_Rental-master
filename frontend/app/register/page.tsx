@@ -8,6 +8,43 @@ import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { CheckCircle, Users, Car, MapPin, Shield, UserCircle, Briefcase } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { motion, AnimatePresence } from 'framer-motion'
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] }
+  }
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+  },
+  hover: {
+    scale: 1.02,
+    y: -5,
+    transition: { duration: 0.2 }
+  },
+  tap: { scale: 0.98 }
+}
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -125,17 +162,44 @@ export default function RegisterPage() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-        <Card className="max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Registration Successful!
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Redirecting to dashboard...
-          </p>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, type: "spring" }}
+        >
+          <Card className="max-w-md w-full text-center">
+            <motion.div 
+              className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 500 }}
+            >
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
+              >
+                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+              </motion.div>
+            </motion.div>
+            <motion.h2 
+              className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              Registration Successful!
+            </motion.h2>
+            <motion.p 
+              className="text-gray-600 dark:text-gray-400"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              Redirecting to dashboard...
+            </motion.p>
+          </Card>
+        </motion.div>
       </div>
     )
   }
@@ -143,51 +207,85 @@ export default function RegisterPage() {
   if (!regPath) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl w-full">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+        <motion.div 
+          className="max-w-2xl w-full"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div className="text-center mb-12" variants={itemVariants}>
+            <motion.h2 
+              className="text-4xl font-bold text-gray-900 dark:text-gray-100"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
               Create an Account
-            </h2>
-            <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            </motion.h2>
+            <motion.p 
+              className="mt-4 text-lg text-gray-600 dark:text-gray-400"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
               Choose how you want to use the platform
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <button
+            <motion.button
               onClick={() => {
                 setRegPath('traveler');
                 setFormData({ ...formData, role: 'traveler' });
               }}
-              className="group p-8 bg-white dark:bg-gray-800 rounded-2xl border-2 border-transparent hover:border-primary-500 shadow-xl transition-all text-center"
+              className="group p-8 bg-white dark:bg-gray-800 rounded-2xl border-2 border-transparent hover:border-primary-500 shadow-xl text-center"
+              variants={cardVariants}
+              whileHover="hover"
+              whileTap="tap"
             >
-              <div className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+              <motion.div 
+                className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6"
+                whileHover={{ scale: 1.15, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
                 <UserCircle className="w-10 h-10 text-primary-600 dark:text-primary-400" />
-              </div>
+              </motion.div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Traveler</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 I want to book cars, hotels, and tours.
               </p>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
               onClick={() => {
                 setRegPath('business');
                 setFormData({ ...formData, role: 'driver' });
               }}
-              className="group p-8 bg-white dark:bg-gray-800 rounded-2xl border-2 border-transparent hover:border-blue-500 shadow-xl transition-all text-center"
+              className="group p-8 bg-white dark:bg-gray-800 rounded-2xl border-2 border-transparent hover:border-blue-500 shadow-xl text-center"
+              variants={cardVariants}
+              whileHover="hover"
+              whileTap="tap"
             >
-              <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+              <motion.div 
+                className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6"
+                whileHover={{ scale: 1.15, rotate: -5 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
                 <Briefcase className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-              </div>
+              </motion.div>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Business</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 I want to offer my services or list properties.
               </p>
-            </button>
+            </motion.button>
           </div>
 
-          <p className="mt-12 text-center text-gray-600 dark:text-gray-400">
+          <motion.p 
+            className="mt-12 text-center text-gray-600 dark:text-gray-400"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
             Already have an account?{' '}
             <Link
               href="/login"
@@ -195,37 +293,58 @@ export default function RegisterPage() {
             >
               Sign in
             </Link>
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <button
+      <motion.div 
+        className="max-w-md w-full"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <motion.button
           onClick={() => setRegPath(null)}
           className="mb-8 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 flex items-center"
+          whileHover={{ x: -5 }}
+          transition={{ duration: 0.2 }}
         >
           ← Back to selection
-        </button>
+        </motion.button>
 
-        <div className="text-center mb-8">
+        <motion.div 
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {regPath === 'traveler' ? 'Traveler Registration' : 'Business Registration'}
           </h2>
-        </div>
+        </motion.div>
 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+        >
         <Card>
           <form onSubmit={handleSubmit} className="space-y-6">
             {regPath === 'business' && (
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   Business Type
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => setFormData({ ...formData, role: 'driver' })}
                     className={`p-3 rounded-lg border transition-all text-center ${
@@ -233,10 +352,12 @@ export default function RegisterPage() {
                         ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
                         : 'border-gray-200 dark:border-gray-700'
                     }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-xs font-medium">Driver</div>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
                     onClick={() => setFormData({ ...formData, role: 'tour_guide' })}
                     className={`p-3 rounded-lg border transition-all text-center ${
@@ -244,10 +365,12 @@ export default function RegisterPage() {
                         ? 'border-green-600 bg-green-50 dark:bg-green-900/20'
                         : 'border-gray-200 dark:border-gray-700'
                     }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-xs font-medium">Tour Guide</div>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
                     onClick={() => setFormData({ ...formData, role: 'car_owner' })}
                     className={`p-3 rounded-lg border transition-all text-center ${

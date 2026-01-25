@@ -82,9 +82,25 @@ const getDriverById = async (req, res) => {
       });
     }
 
+    // Fetch reviews for this driver
+    const reviewsQuery = `
+      SELECT r.id, r.rating, r.comment, r.created_at, u.name as user_name
+      FROM reviews r
+      LEFT JOIN users u ON r.user_id = u.id
+      WHERE r.reviewable_type = 'driver' AND r.reviewable_id = ?
+      ORDER BY r.created_at DESC
+    `;
+    let reviews = [];
+    try {
+      const [reviewRows] = await pool.execute(reviewsQuery, [id]);
+      reviews = reviewRows;
+    } catch (reviewError) {
+      console.error('Error fetching driver reviews:', reviewError);
+    }
+
     res.status(200).json({
       success: true,
-      data: rows[0]
+      data: { ...rows[0], reviews }
     });
   } catch (error) {
     console.error('Get driver by ID error:', error);
