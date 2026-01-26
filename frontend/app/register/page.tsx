@@ -26,7 +26,7 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }
   }
 }
 
@@ -36,7 +36,7 @@ const cardVariants = {
     opacity: 1,
     scale: 1,
     y: 0,
-    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }
   },
   hover: {
     scale: 1.02,
@@ -378,10 +378,12 @@ export default function RegisterPage() {
                         ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20'
                         : 'border-gray-200 dark:border-gray-700'
                     }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-xs font-medium">Car Owner</div>
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
                     onClick={() => setFormData({ ...formData, role: 'hotel_owner' })}
                     className={`p-3 rounded-lg border transition-all text-center ${
@@ -389,11 +391,13 @@ export default function RegisterPage() {
                         ? 'border-orange-600 bg-orange-50 dark:bg-orange-900/20'
                         : 'border-gray-200 dark:border-gray-700'
                     }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <div className="text-xs font-medium">Hotel Owner</div>
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {regPath === 'business' && (
@@ -565,7 +569,8 @@ export default function RegisterPage() {
             </Button>
           </form>
         </Card>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }

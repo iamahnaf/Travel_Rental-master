@@ -14,6 +14,15 @@ const registerUser = async (req, res) => {
     const validRoles = ['traveler', 'driver', 'tour_guide', 'car_owner', 'hotel_owner', 'admin'];
     const userRole = role && validRoles.includes(role) ? role : 'traveler';
 
+    // Validate business data for business roles
+    if (['driver', 'tour_guide', 'car_owner', 'hotel_owner'].includes(userRole) && !businessData) {
+      connection.release();
+      return res.status(400).json({
+        success: false,
+        message: 'Business data is required for this role'
+      });
+    }
+
     // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
