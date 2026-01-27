@@ -403,7 +403,7 @@ export default function RegisterPage() {
             {regPath === 'business' && (
               <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider">
-                  {formData.role.replace('_', ' ')} Details
+                  {formData.role === 'car_owner' ? 'Car' : formData.role === 'hotel_owner' ? 'Hotel' : formData.role.replace('_', ' ')} Details
                 </h3>
                 
                 {formData.role === 'hotel_owner' && (
