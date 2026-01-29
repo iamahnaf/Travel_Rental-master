@@ -3,6 +3,7 @@ const { pool } = require('../config/db');
 // Get all drivers
 const getAllDrivers = async (req, res) => {
   try {
+    
     // Try to query with license_url first
     let query = `
       SELECT id, name, photo_url, license_url, experience_years, rating, total_rides, 
