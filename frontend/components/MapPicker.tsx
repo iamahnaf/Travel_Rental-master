@@ -33,6 +33,9 @@ export function MapPicker({ onLocationSelect, initialLocation, className = '' }:
   const [manualLat, setManualLat] = useState(initialLocation?.lat.toString() || '')
   const [manualLng, setManualLng] = useState(initialLocation?.lng.toString() || '')
   const [showManualInput, setShowManualInput] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   // Default center: Dhaka, Bangladesh
   const DEFAULT_CENTER: [number, number] = [23.8103, 90.4125]
@@ -187,11 +190,61 @@ export function MapPicker({ onLocationSelect, initialLocation, className = '' }:
         await handleMapClick(lat, lng)
       },
       (error) => {
-        console.error('Geolocation error:', error)
+        console.log('Geolocation access denied or unavailable:', error.message)
         alert('Unable to get your location. Please click on the map or enter coordinates manually.')
         setLoading(false)
       }
     )
+  }
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!searchQuery.trim()) return
+
+    setIsSearching(true)
+    try {
+      // OpenStreetMap Nominatim search
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?` +
+          new URLSearchParams({
+            q: searchQuery,
+            format: 'json',
+            limit: '5',
+            countrycodes: 'bd', // Limit to Bangladesh
+            addressdetails: '1',
+          }),
+        {
+          headers: {
+            'User-Agent': 'NextJS-App',
+          },
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Search failed')
+      }
+
+      const data = await response.json()
+      setSearchResults(data)
+
+      if (data.length === 0) {
+        alert('No results found. Try a different search term.')
+      }
+    } catch (error) {
+      console.error('Search error:', error)
+      alert('Search failed. Please try again.')
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleSelectSearchResult = async (result: any) => {
+    const lat = parseFloat(result.lat)
+    const lng = parseFloat(result.lon)
+    
+    await handleMapClick(lat, lng)
+    setSearchResults([])
+    setSearchQuery('')
   }
 
   return (
@@ -200,6 +253,56 @@ export function MapPicker({ onLocationSelect, initialLocation, className = '' }:
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Select Pickup Location
         </label>
+
+        {/* Search Box */}
+        <form onSubmit={handleSearch} className="relative">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for a place (e.g., Gulshan, Dhaka)"
+              className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <button
+              type="submit"
+              disabled={isSearching || !searchQuery.trim()}
+              className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {isSearching ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                'Search'
+              )}
+            </button>
+          </div>
+
+          {/* Search Results Dropdown */}
+          {searchResults.length > 0 && (
+            <div className="absolute z-10 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+              {searchResults.map((result, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleSelectSearchResult(result)}
+                  className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors"
+                >
+                  <div className="flex items-start space-x-2">
+                    <MapPin className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-1" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {result.display_name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {result.type} • {result.class}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </form>
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2">

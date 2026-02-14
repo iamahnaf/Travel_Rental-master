@@ -16,6 +16,7 @@ interface Vehicle {
   price_per_day: number;
   with_driver_price: number;
   image_url: string;
+  images?: string;
   description: string;
   available: boolean;
   default_fuel_included: boolean;
@@ -32,6 +33,7 @@ interface VehicleFormData {
   with_driver_price: number;
   description: string;
   image_url: string;
+  images: string[];
   default_fuel_included: boolean;
   available: boolean;
 }
@@ -47,6 +49,7 @@ const initialFormData: VehicleFormData = {
   with_driver_price: 0,
   description: '',
   image_url: '',
+  images: [],
   default_fuel_included: false,
   available: true,
 };
@@ -114,6 +117,7 @@ export default function CarOwnerDashboard() {
 
   const openEditModal = (vehicle: Vehicle) => {
     setEditingVehicle(vehicle);
+    const existingImages = vehicle.images ? (typeof vehicle.images === 'string' ? JSON.parse(vehicle.images) : vehicle.images) : [];
     setFormData({
       brand: vehicle.brand,
       model: vehicle.model,
@@ -125,6 +129,7 @@ export default function CarOwnerDashboard() {
       with_driver_price: vehicle.with_driver_price || 0,
       description: vehicle.description || '',
       image_url: vehicle.image_url || '',
+      images: Array.isArray(existingImages) ? existingImages : [],
       default_fuel_included: vehicle.default_fuel_included || false,
       available: vehicle.available !== false,
     });
@@ -150,35 +155,79 @@ export default function CarOwnerDashboard() {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    // Validate number of images
+    if (formData.images.length + files.length > 5) {
+      alert('Maximum 5 images allowed');
+      return;
+    }
 
     setUploadingImage(true);
+    const uploadedUrls: string[] = [];
+
     try {
-      const formDataUpload = new FormData();
-      formDataUpload.append('photo', file);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5001/api/uploads/vehicle/photo', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formDataUpload
-      });
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          alert(`File ${file.name} is not an image`);
+          continue;
+        }
 
-      if (res.ok) {
-        const data = await res.json();
-        setFormData(prev => ({ ...prev, image_url: data.url || data.path }));
-      } else {
-        alert('Failed to upload image');
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`File ${file.name} is too large (max 5MB)`);
+          continue;
+        }
+
+        const formDataUpload = new FormData();
+        formDataUpload.append('photo', file);
+
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5001/api/uploads/vehicle/photo', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formDataUpload
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const imageUrl = data.url || data.path;
+          uploadedUrls.push(imageUrl);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...uploadedUrls],
+          image_url: prev.image_url || uploadedUrls[0]
+        }));
+        alert(`${uploadedUrls.length} image(s) uploaded successfully!`);
       }
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Error uploading image');
+      alert('Error uploading images. Please try again.');
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData(prev => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        images: newImages,
+        image_url: newImages[0] || ''
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -193,13 +242,18 @@ export default function CarOwnerDashboard() {
       
       const method = editingVehicle ? 'PUT' : 'POST';
 
+      const submitData = {
+        ...formData,
+        images: JSON.stringify(formData.images)
+      };
+
       const res = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       });
 
       if (res.ok) {
@@ -397,8 +451,11 @@ export default function CarOwnerDashboard() {
                         src={vehicle.image_url}
                         alt={`${vehicle.brand} ${vehicle.model}`}
                         className="w-full h-full object-cover"
+                        crossOrigin="anonymous"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em" font-size="20"%3ENo Image%3C/text%3E%3C/svg%3E';
                         }}
                       />
                     ) : (
@@ -607,60 +664,80 @@ export default function CarOwnerDashboard() {
                 />
               </div>
 
-              {/* Image Upload */}
+              {/* Multiple Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vehicle Image</label>
-                <div className="flex gap-4 items-start">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      name="image_url"
-                      value={formData.image_url}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="Image URL or upload below"
-                    />
-                    <div className="mt-2">
-                      <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-lg transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                        </svg>
-                        {uploadingImage ? 'Uploading...' : 'Upload Image'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          disabled={uploadingImage}
-                          className="hidden"
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Vehicle Images (Max 5)
+                </label>
+                
+                {/* Image Gallery */}
+                {formData.images.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {formData.images.map((imageUrl, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={imageUrl}
+                          alt={`Vehicle ${index + 1}`}
+                          crossOrigin="anonymous"
+                          className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-600"
                         />
-                      </label>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remove image"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        {index === 0 && (
+                          <span className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                            Main
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  {formData.image_url && (
-                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-200">
-                      <img
-                        src={formData.image_url}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+                )}
+
+                {/* Upload Button */}
+                {formData.images.length < 5 && (
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                    </svg>
+                    {uploadingImage ? 'Uploading...' : `Add Images (${formData.images.length}/5)`}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      multiple
+                      className="hidden"
+                    />
+                  </label>
+                )}
+                
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Upload up to 5 images. First image will be the main display image.
+                </p>
               </div>
 
-              <div className="flex items-center gap-4">
+              {/* Hidden field for backward compatibility */}
+              <input type="hidden" name="image_url" value={formData.image_url} />
+
+              {/* Checkboxes */}
+              <div className="space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     name="default_fuel_included"
                     checked={formData.default_fuel_included}
                     onChange={handleInputChange}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Fuel Included</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Default fuel included</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -668,24 +745,29 @@ export default function CarOwnerDashboard() {
                     name="available"
                     checked={formData.available}
                     onChange={handleInputChange}
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Available for Booking</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Available for booking</span>
                 </label>
               </div>
 
-              <div className="flex gap-4 pt-4">
+              {/* Form Actions */}
+              <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={closeModal}
-                  className="flex-1 py-3 px-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingVehicle(null);
+                    setFormData(initialFormData);
+                  }}
+                  className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
                 >
                   {submitting ? 'Saving...' : (editingVehicle ? 'Update Vehicle' : 'Add Vehicle')}
                 </button>

@@ -130,17 +130,17 @@ router.post('/vehicle/photo', authenticateToken, upload.singlePhoto, async (req,
       });
     }
 
-    const photoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    console.log('File uploaded:', req.file.filename);
+    
+    // Return full URL for backend API
+    const photoUrl = `http://localhost:5001/uploads/${req.file.filename}`;
     
     res.status(200).json({
       success: true,
       message: 'Vehicle photo uploaded successfully',
       url: photoUrl,
       path: photoUrl,
-      data: {
-        url: photoUrl,
-        filename: req.file.filename
-      }
+      filename: req.file.filename
     });
   } catch (error) {
     console.error('Vehicle photo upload error:', error);

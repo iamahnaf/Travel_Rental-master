@@ -12,9 +12,22 @@ const getAllHotels = async (req, res) => {
     `;
     const [rows] = await pool.execute(query);
 
+    // Add image_url for backward compatibility
+    const hotelsWithImageUrl = rows.map(hotel => {
+      if (hotel.image_urls) {
+        try {
+          const imageArray = typeof hotel.image_urls === 'string' ? JSON.parse(hotel.image_urls) : hotel.image_urls;
+          hotel.image_url = Array.isArray(imageArray) && imageArray.length > 0 ? imageArray[0] : null;
+        } catch (e) {
+          hotel.image_url = null;
+        }
+      }
+      return hotel;
+    });
+
     res.status(200).json({
       success: true,
-      data: rows
+      data: hotelsWithImageUrl
     });
   } catch (error) {
     console.error('Get all hotels error:', error);
@@ -45,9 +58,26 @@ const getHotelById = async (req, res) => {
       });
     }
 
+    // Add image_url for backward compatibility (first image from image_urls)
+    const hotel = rows[0];
+    console.log('Fetching hotel by ID:', id);
+    console.log('Raw image_urls from DB:', hotel.image_urls);
+    console.log('Type:', typeof hotel.image_urls);
+    
+    if (hotel.image_urls) {
+      try {
+        const imageArray = typeof hotel.image_urls === 'string' ? JSON.parse(hotel.image_urls) : hotel.image_urls;
+        hotel.image_url = Array.isArray(imageArray) && imageArray.length > 0 ? imageArray[0] : null;
+        console.log('Parsed image array:', imageArray);
+      } catch (e) {
+        console.error('Error parsing image_urls:', e);
+        hotel.image_url = null;
+      }
+    }
+
     res.status(200).json({
       success: true,
-      data: rows[0]
+      data: hotel
     });
   } catch (error) {
     console.error('Get hotel by ID error:', error);
@@ -178,11 +208,17 @@ const createHotel = async (req, res) => {
       contact_phone, contact_email
     } = req.body;
 
+    console.log('Creating hotel - Received image_urls:', image_urls);
+    console.log('Type:', typeof image_urls);
+
     // Handle both image_url and image_urls from frontend
     let imageUrls = image_urls;
     if (!imageUrls && image_url) {
       imageUrls = [image_url];
     }
+
+    console.log('Processed imageUrls:', imageUrls);
+    console.log('Will store as JSON:', JSON.stringify(imageUrls || []));
 
     // Handle both available_rooms and rooms_available
     const roomsAvailable = available_rooms || rooms_available || 1;
@@ -235,6 +271,9 @@ const updateHotel = async (req, res) => {
       contact_phone, contact_email, available
     } = req.body;
 
+    console.log('Updating hotel - Received image_urls:', image_urls);
+    console.log('Type:', typeof image_urls);
+
     // Check ownership
     const checkQuery = 'SELECT id FROM hotels WHERE id = ? AND user_id = ?';
     const [rows] = await pool.execute(checkQuery, [id, userId]);
@@ -247,6 +286,9 @@ const updateHotel = async (req, res) => {
     if (!imageUrls && image_url) {
       imageUrls = [image_url];
     }
+
+    console.log('Processed imageUrls:', imageUrls);
+    console.log('Will store as JSON:', JSON.stringify(imageUrls || []));
 
     // Handle both available_rooms and rooms_available
     let roomsAvailable = available_rooms || rooms_available || 1;

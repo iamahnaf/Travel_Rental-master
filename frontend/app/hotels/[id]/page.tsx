@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { mockHotels } from '@/lib/mockData'
 import { Hotel } from '@/types'
@@ -32,8 +31,26 @@ export default function HotelDetailsPage() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [direction, setDirection] = useState(1)
 
-  // Parse images from hotel data
-  const images = hotel ? (Array.isArray(hotel.image_urls) ? hotel.image_urls : (typeof hotel.image_urls === 'string' ? JSON.parse(hotel.image_urls) : [])) : []
+  // Parse images from hotel data with better fallback handling
+  let images: string[] = [];
+  if (hotel) {
+    if (Array.isArray(hotel.image_urls)) {
+      images = hotel.image_urls;
+    } else if (typeof hotel.image_urls === 'string') {
+      try {
+        const parsed = JSON.parse(hotel.image_urls);
+        images = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        // If parsing fails, try to use it as a single URL
+        if (hotel.image_urls) images = [hotel.image_urls];
+      }
+    }
+    // Fallback to old single image_url field if no images found
+    if (images.length === 0 && hotel.image_url) {
+      images = [hotel.image_url];
+    }
+    console.log('Parsed images for carousel:', images);
+  }
 
   // All hooks must be called before any conditional returns
   const handleMouseEnter = useCallback(() => {
@@ -62,6 +79,8 @@ export default function HotelDetailsPage() {
         const response = await fetch(`http://localhost:5001/api/hotels/${hotelId}`)
         if (response.ok) {
           const data = await response.json()
+          console.log('Hotel data received:', data.data)
+          console.log('Image URLs:', data.data.image_urls)
           setHotel(data.data)
         }
       } catch (error) {
@@ -104,8 +123,14 @@ export default function HotelDetailsPage() {
   const handleBookNow = async () => {
     const token = localStorage.getItem('token')
     if (!token) {
-      alert('Please login to book a hotel')
       router.push('/login')
+      return
+    }
+
+    // Check if user is a business account
+    const businessRoles = ['car_owner', 'hotel_owner', 'driver', 'tour_guide']
+    if (user && businessRoles.includes(user.role)) {
+      alert('Business accounts cannot book services. Please create or log in with a Traveler account.')
       return
     }
 
@@ -264,13 +289,19 @@ export default function HotelDetailsPage() {
                     className="absolute inset-0"
                   >
                     {images[currentImageIndex] ? (
-                      <Image
+                      <img
                         src={images[currentImageIndex]}
                         alt={`${hotel.name} - Image ${currentImageIndex + 1}`}
-                        fill
-                        className="object-cover"
-                        priority
-                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-gray-400"><svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/></svg></div>';
+                          }
+                        }}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-gray-400">
@@ -369,7 +400,7 @@ export default function HotelDetailsPage() {
             </div>
 
             {/* Booking Section */}
-            {user?.role === 'traveler' ? (
+            {(!user || user?.role === 'traveler') ? (
               <Card>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   Booking Details
@@ -479,7 +510,7 @@ export default function HotelDetailsPage() {
                   size="lg"
                   disabled={!startDate || !endDate || hotel.available_rooms === 0}
                 >
-                  {hotel.available_rooms === 0 ? 'No Rooms Available' : 'Book Now'}
+                  {hotel.available_rooms === 0 ? 'No Rooms Available' : (!user ? 'Login to Book' : 'Book Now')}
                 </Button>
               </div>
             </Card>

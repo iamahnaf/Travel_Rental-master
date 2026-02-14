@@ -74,8 +74,14 @@ export default function DriverDetailsPage() {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        alert('Please login to complete booking')
         router.push('/login')
+        return
+      }
+
+      // Check if user is a business account
+      const businessRoles = ['car_owner', 'hotel_owner', 'driver', 'tour_guide']
+      if (user && businessRoles.includes(user.role)) {
+        alert('Business accounts cannot book services. Please create or log in with a Traveler account.')
         return
       }
 
@@ -208,7 +214,7 @@ export default function DriverDetailsPage() {
 
           {/* Right Column - Booking */}
           <div>
-            {user?.role === 'traveler' ? (
+            {(!user || user?.role === 'traveler') ? (
               <Card>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   Book This Driver
@@ -304,7 +310,7 @@ export default function DriverDetailsPage() {
                   size="lg"
                   disabled={!startDate || !endDate || !driver.available}
                 >
-                  {!driver.available ? 'Not Available' : 'Book Now'}
+                  {!driver.available ? 'Not Available' : (!user ? 'Login to Book' : 'Book Now')}
                 </Button>
               </div>
             </Card>

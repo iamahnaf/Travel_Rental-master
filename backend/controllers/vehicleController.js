@@ -156,21 +156,21 @@ const createVehicle = async (req, res) => {
     const userId = req.user.userId;
     const { 
       brand, model, year, fuel_type, transmission, seats, 
-      price_per_day, with_driver_price, image_url, description, 
+      price_per_day, with_driver_price, image_url, images, description, 
       default_fuel_included 
     } = req.body;
 
     const query = `
       INSERT INTO vehicles (
         owner_id, brand, model, year, fuel_type, transmission, seats, 
-        price_per_day, with_driver_price, image_url, description, 
+        price_per_day, with_driver_price, image_url, images, description, 
         default_fuel_included
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
     const [result] = await pool.execute(query, [
       userId, brand, model, year, fuel_type, transmission, seats, 
-      price_per_day, with_driver_price, image_url, description, 
+      price_per_day, with_driver_price, image_url, images || null, description, 
       default_fuel_included ? 1 : 0
     ]);
 
@@ -195,7 +195,7 @@ const updateVehicle = async (req, res) => {
     const userId = req.user.userId;
     const { 
       brand, model, year, fuel_type, transmission, seats, 
-      price_per_day, with_driver_price, image_url, description, 
+      price_per_day, with_driver_price, image_url, images, description, 
       available, default_fuel_included 
     } = req.body;
 
@@ -210,14 +210,14 @@ const updateVehicle = async (req, res) => {
       UPDATE vehicles SET 
         brand = ?, model = ?, year = ?, fuel_type = ?, transmission = ?, 
         seats = ?, price_per_day = ?, with_driver_price = ?, 
-        image_url = ?, description = ?, available = ?, 
+        image_url = ?, images = ?, description = ?, available = ?, 
         default_fuel_included = ?
       WHERE id = ?
     `;
     
     await pool.execute(query, [
       brand, model, year, fuel_type, transmission, seats, 
-      price_per_day, with_driver_price, image_url, description, 
+      price_per_day, with_driver_price, image_url, images || null, description, 
       available ? 1 : 0, default_fuel_included ? 1 : 0, id
     ]);
 

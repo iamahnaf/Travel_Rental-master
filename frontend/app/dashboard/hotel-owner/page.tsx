@@ -14,6 +14,7 @@ interface Hotel {
   rating: number;
   amenities: string;
   image_url: string;
+  image_urls?: string;
   available: boolean;
   rooms_available: number;
   contact_phone: string;
@@ -27,6 +28,7 @@ interface HotelFormData {
   price_per_night: number;
   amenities: string;
   image_url: string;
+  images: string[];
   rooms_available: number;
   contact_phone: string;
   contact_email: string;
@@ -40,6 +42,7 @@ const initialFormData: HotelFormData = {
   price_per_night: 0,
   amenities: '',
   image_url: '',
+  images: [],
   rooms_available: 1,
   contact_phone: '',
   contact_email: '',
@@ -109,6 +112,7 @@ export default function HotelOwnerDashboard() {
 
   const openEditModal = (hotel: Hotel) => {
     setEditingHotel(hotel);
+    const existingImages = hotel.image_urls ? (typeof hotel.image_urls === 'string' ? JSON.parse(hotel.image_urls) : hotel.image_urls) : [];
     setFormData({
       name: hotel.name,
       location: hotel.location,
@@ -116,6 +120,7 @@ export default function HotelOwnerDashboard() {
       price_per_night: hotel.price_per_night,
       amenities: hotel.amenities || '',
       image_url: hotel.image_url || '',
+      images: Array.isArray(existingImages) ? existingImages : [],
       rooms_available: hotel.rooms_available || 1,
       contact_phone: hotel.contact_phone || '',
       contact_email: hotel.contact_email || '',
@@ -143,35 +148,76 @@ export default function HotelOwnerDashboard() {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (formData.images.length + files.length > 5) {
+      alert('Maximum 5 images allowed');
+      return;
+    }
 
     setUploadingImage(true);
+    const uploadedUrls: string[] = [];
+
     try {
-      const formDataUpload = new FormData();
-      formDataUpload.append('photo', file);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
 
-      const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5001/api/uploads/hotel/photo', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formDataUpload
-      });
+        if (!file.type.startsWith('image/')) {
+          alert(`File ${file.name} is not an image`);
+          continue;
+        }
 
-      if (res.ok) {
-        const data = await res.json();
-        setFormData(prev => ({ ...prev, image_url: data.url || data.path }));
-      } else {
-        alert('Failed to upload image');
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`File ${file.name} is too large (max 5MB)`);
+          continue;
+        }
+
+        const formDataUpload = new FormData();
+        formDataUpload.append('photo', file);
+
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5001/api/uploads/hotel/photo', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formDataUpload
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const imageUrl = data.url || data.path;
+          uploadedUrls.push(imageUrl);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...uploadedUrls],
+          image_url: prev.image_url || uploadedUrls[0]
+        }));
+        alert(`${uploadedUrls.length} image(s) uploaded successfully!`);
       }
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Error uploading image');
+      alert('Error uploading images. Please try again.');
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData(prev => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        images: newImages,
+        image_url: newImages[0] || ''
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -186,13 +232,20 @@ export default function HotelOwnerDashboard() {
       
       const method = editingHotel ? 'PUT' : 'POST';
 
+      const submitData = {
+        ...formData,
+        image_urls: formData.images
+      };
+
+      console.log('Submitting hotel with images:', submitData.image_urls);
+
       const res = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       });
 
       if (res.ok) {
@@ -606,48 +659,68 @@ export default function HotelOwnerDashboard() {
               </div>
 
               {/* Image Upload */}
+              {/* Multiple Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hotel Image</label>
-                <div className="flex gap-4 items-start">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      name="image_url"
-                      value={formData.image_url}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="Image URL or upload below"
-                    />
-                    <div className="mt-2">
-                      <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-lg transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                        </svg>
-                        {uploadingImage ? 'Uploading...' : 'Upload Image'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          disabled={uploadingImage}
-                          className="hidden"
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Hotel Images (Max 5)
+                </label>
+                
+                {/* Image Gallery */}
+                {formData.images.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {formData.images.map((imageUrl, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={imageUrl}
+                          alt={`Hotel ${index + 1}`}
+                          crossOrigin="anonymous"
+                          className="w-full h-32 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-600"
                         />
-                      </label>
-                    </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remove image"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        {index === 0 && (
+                          <span className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                            Main
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                  {formData.image_url && (
-                    <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-200">
-                      <img
-                        src={formData.image_url}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+                )}
+
+                {/* Upload Button */}
+                {formData.images.length < 5 && (
+                  <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                    </svg>
+                    {uploadingImage ? 'Uploading...' : `Add Images (${formData.images.length}/5)`}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      multiple
+                      className="hidden"
+                    />
+                  </label>
+                )}
+                
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Upload up to 5 images. First image will be the main display image.
+                </p>
               </div>
+
+              {/* Hidden field for backward compatibility */}
+              <input type="hidden" name="image_url" value={formData.image_url} />
 
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">

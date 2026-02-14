@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Search, Car, Building2, User, MapPin, Calendar } from 'lucide-react'
+import { Search, Car, Building2, User, MapPin, Calendar, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 
@@ -13,10 +13,60 @@ export function Hero() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [isLoaded, setIsLoaded] = useState(false)
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [showResults, setShowResults] = useState(false)
 
   useEffect(() => {
     setIsLoaded(true)
   }, [])
+
+  // Search for location as user types
+  useEffect(() => {
+    const delayTimer = setTimeout(async () => {
+      if (location.trim().length > 2) {
+        setIsSearching(true)
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/search?` +
+              new URLSearchParams({
+                q: location,
+                format: 'json',
+                limit: '5',
+                countrycodes: 'bd',
+                addressdetails: '1',
+              }),
+            {
+              headers: {
+                'User-Agent': 'NextJS-App',
+              },
+            }
+          )
+
+          if (response.ok) {
+            const data = await response.json()
+            setSearchResults(data)
+            setShowResults(data.length > 0)
+          }
+        } catch (error) {
+          console.log('Location search error:', error)
+        } finally {
+          setIsSearching(false)
+        }
+      } else {
+        setSearchResults([])
+        setShowResults(false)
+      }
+    }, 500) // Debounce for 500ms
+
+    return () => clearTimeout(delayTimer)
+  }, [location])
+
+  const handleSelectLocation = (result: any) => {
+    setLocation(result.display_name.split(',')[0]) // Set just the main location name
+    setSearchResults([])
+    setShowResults(false)
+  }
 
   const handleSearch = () => {
     if (searchType === 'hotel') {
@@ -207,14 +257,49 @@ export function Hero() {
               {/* Search Form */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <motion.div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70" />
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70 z-10" />
+                  {isSearching && (
+                    <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70 z-10 animate-spin" />
+                  )}
                   <input
                     type="text"
-                    placeholder="Enter city or location"
+                    placeholder="Search city or location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
+                    onFocus={() => searchResults.length > 0 && setShowResults(true)}
                     className="w-full pl-12 pr-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/60 focus:bg-white/20 focus:ring-2 focus:ring-white/40 focus:border-transparent transition-all duration-300"
                   />
+                  
+                  {/* Search Results Dropdown */}
+                  {showResults && searchResults.length > 0 && (
+                    <motion.div 
+                      className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-2xl max-h-64 overflow-y-auto"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {searchResults.map((result, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => handleSelectLocation(result)}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 last:border-b-0 transition-colors"
+                        >
+                          <div className="flex items-start space-x-2">
+                            <MapPin className="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0 mt-1" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {result.display_name}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {result.type}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
                 </motion.div>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70" />

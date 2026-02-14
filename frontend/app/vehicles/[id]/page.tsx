@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { mockDrivers } from '@/lib/mockData'
 import { Vehicle, Driver } from '@/types'
 import { PromoCode, calculateDiscount } from '@/lib/promoCodes'
@@ -127,12 +126,36 @@ export default function VehicleDetailsPage() {
   const totalPrice = subtotal - discount + serviceCharge
 
   const handleBookNow = async () => {
+    // Check if user is logged in first
+    if (!isAuthenticated || !user) {
+      // Store the current booking data in localStorage for after login
+      const bookingData = {
+        vehicleId,
+        withDriver,
+        startDate,
+        endDate,
+        pickupLocation,
+        destinationLocation,
+        selectedDriver: selectedDriver?.id,
+        appliedPromoCode: appliedPromoCode?.code
+      }
+      localStorage.setItem('pendingBooking', JSON.stringify(bookingData))
+      router.push('/login')
+      return
+    }
+
+    // Check if user is a business account
+    const businessRoles = ['car_owner', 'hotel_owner', 'driver', 'tour_guide']
+    if (businessRoles.includes(user.role)) {
+      alert('Business accounts cannot book services. Please create or log in with a Traveler account.')
+      return
+    }
+
     if (!withDriver) {
       // Check if user already has an approved driving license
       try {
         const token = localStorage.getItem('token')
         if (!token) {
-          alert('Please login to continue')
           router.push('/login')
           return
         }
@@ -292,13 +315,19 @@ export default function VehicleDetailsPage() {
                     className="absolute inset-0"
                   >
                     {images[currentImageIndex] ? (
-                      <Image
+                      <img
                         src={images[currentImageIndex]}
                         alt={`${vehicle.brand} ${vehicle.model} - Image ${currentImageIndex + 1}`}
-                        fill
-                        className="object-cover"
-                        priority
-                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.onerror = null;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-gray-400"><svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/></svg></div>';
+                          }
+                        }}
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center text-gray-400">
@@ -379,7 +408,7 @@ export default function VehicleDetailsPage() {
             )}
 
             {/* Booking Section */}
-            {user?.role === 'traveler' ? (
+            {(!user || user?.role === 'traveler') ? (
               <Card>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   Booking Details
@@ -603,7 +632,8 @@ export default function VehicleDetailsPage() {
                   disabled={!startDate || !endDate || !pickupLocation || pickupLocation.lat === 0 || !destinationLocation || destinationLocation.lat === 0}
                 >
                   {(!pickupLocation || pickupLocation.lat === 0) ? 'Please Select Pickup Location' : 
-                   (!destinationLocation || destinationLocation.lat === 0) ? 'Please Select Destination' : 'Book Now'}
+                   (!destinationLocation || destinationLocation.lat === 0) ? 'Please Select Destination' : 
+                   (!isAuthenticated ? 'Login to Book' : 'Book Now')}
                 </Button>
               </div>
             </Card>
