@@ -297,10 +297,49 @@ const updateDriverProfile = async (req, res) => {
   }
 };
 
+// Delete driver (admin only or owner)
+const deleteDriver = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    // Admin can delete any driver, otherwise check ownership
+    if (userRole !== 'admin') {
+      const checkQuery = 'SELECT id FROM drivers WHERE id = ? AND user_id = ?';
+      const [rows] = await pool.execute(checkQuery, [id, userId]);
+      if (rows.length === 0) {
+        return res.status(403).json({ success: false, message: 'Unauthorized or driver not found' });
+      }
+    } else {
+      // Admin: just check if driver exists
+      const checkQuery = 'SELECT id FROM drivers WHERE id = ?';
+      const [rows] = await pool.execute(checkQuery, [id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Driver not found' });
+      }
+    }
+
+    await pool.execute('DELETE FROM drivers WHERE id = ?', [id]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Driver deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete driver error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   getAllDrivers,
   getDriverById,
   getAvailableDrivers,
   getDriverByUserId,
-  updateDriverProfile
+  updateDriverProfile,
+  deleteDriver
 };

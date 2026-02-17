@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { 
   Users, Car, Building2, MapPin, UserCheck, Calendar, 
   DollarSign, TrendingUp, LogOut, Eye, CheckCircle, XCircle,
-  Clock, Shield, BarChart3
+  Clock, Shield, BarChart3, Trash2
 } from 'lucide-react'
 
 interface Stats {
@@ -47,6 +48,7 @@ interface Booking {
 export default function AdminDashboard() {
   const router = useRouter()
   const { user, logout, isAuthenticated, isLoading } = useAuth()
+  const { showToast } = useToast()
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'bookings' | 'vehicles' | 'hotels' | 'verifications'>('overview')
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<Stats>({
@@ -60,6 +62,7 @@ export default function AdminDashboard() {
   const [hotels, setHotels] = useState<any[]>([])
   const [nids, setNids] = useState<any[]>([])
   const [licenses, setLicenses] = useState<any[]>([])
+  const [deleteConfirm, setDeleteConfirm] = useState<{type: string, id: number} | null>(null)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -246,6 +249,94 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleDeleteUser = async (id: number) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5001/api/users/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setUsers(users.filter(u => u.id !== id))
+        setStats(prev => ({ ...prev, totalUsers: prev.totalUsers - 1 }))
+        setDeleteConfirm(null)
+        showToast('User deleted successfully', 'success')
+      } else {
+        showToast(data.message || 'Failed to delete user', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      showToast('Error deleting user', 'error')
+    }
+  }
+
+  const handleDeleteVehicle = async (id: number) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5001/api/vehicles/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setVehicles(vehicles.filter(v => v.id !== id))
+        setStats(prev => ({ ...prev, totalVehicles: prev.totalVehicles - 1 }))
+        setDeleteConfirm(null)
+        showToast('Vehicle deleted successfully', 'success')
+      } else {
+        showToast(data.message || 'Failed to delete vehicle', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting vehicle:', error)
+      showToast('Error deleting vehicle', 'error')
+    }
+  }
+
+  const handleDeleteHotel = async (id: number) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5001/api/hotels/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setHotels(hotels.filter(h => h.id !== id))
+        setStats(prev => ({ ...prev, totalHotels: prev.totalHotels - 1 }))
+        setDeleteConfirm(null)
+        showToast('Hotel deleted successfully', 'success')
+      } else {
+        showToast(data.message || 'Failed to delete hotel', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting hotel:', error)
+      showToast('Error deleting hotel', 'error')
+    }
+  }
+
+  const handleDeleteBooking = async (id: number) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5001/api/bookings/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setBookings(bookings.filter(b => b.id !== id))
+        setStats(prev => ({ ...prev, totalBookings: prev.totalBookings - 1 }))
+        setDeleteConfirm(null)
+        showToast('Booking deleted successfully', 'success')
+      } else {
+        showToast(data.message || 'Failed to delete booking', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting booking:', error)
+      showToast('Error deleting booking', 'error')
+    }
+  }
+
   if (isLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -418,6 +509,7 @@ export default function AdminDashboard() {
                     <th className="text-left p-4 font-semibold">Phone</th>
                     <th className="text-left p-4 font-semibold">Role</th>
                     <th className="text-left p-4 font-semibold">Joined</th>
+                    <th className="text-left p-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -438,6 +530,38 @@ export default function AdminDashboard() {
                       </td>
                       <td className="p-4 text-sm text-gray-500">
                         {new Date(u.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="p-4">
+                        {u.id !== user?.id && (
+                          deleteConfirm?.type === 'user' && deleteConfirm?.id === u.id ? (
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleDeleteUser(u.id)}
+                                className="bg-red-600 hover:bg-red-700 text-xs"
+                              >
+                                Confirm
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setDeleteConfirm(null)}
+                                className="text-xs"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDeleteConfirm({type: 'user', id: u.id})}
+                              className="text-red-600 border-red-300 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -463,6 +587,7 @@ export default function AdminDashboard() {
                     <th className="text-left p-4 font-semibold">Status</th>
                     <th className="text-left p-4 font-semibold">Amount</th>
                     <th className="text-left p-4 font-semibold">Dates</th>
+                    <th className="text-left p-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -484,6 +609,36 @@ export default function AdminDashboard() {
                       <td className="p-4 font-medium">৳{Number(b.total_price).toLocaleString()}</td>
                       <td className="p-4 text-sm text-gray-500">
                         {new Date(b.start_date).toLocaleDateString()} - {new Date(b.end_date).toLocaleDateString()}
+                      </td>
+                      <td className="p-4">
+                        {deleteConfirm?.type === 'booking' && deleteConfirm?.id === b.id ? (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleDeleteBooking(b.id)}
+                              className="bg-red-600 hover:bg-red-700 text-xs"
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDeleteConfirm(null)}
+                              className="text-xs"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setDeleteConfirm({type: 'booking', id: b.id})}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -509,6 +664,7 @@ export default function AdminDashboard() {
                     <th className="text-left p-4 font-semibold">Owner</th>
                     <th className="text-left p-4 font-semibold">Price/Day</th>
                     <th className="text-left p-4 font-semibold">Status</th>
+                    <th className="text-left p-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -525,6 +681,36 @@ export default function AdminDashboard() {
                         }`}>
                           {v.available ? 'Available' : 'Unavailable'}
                         </span>
+                      </td>
+                      <td className="p-4">
+                        {deleteConfirm?.type === 'vehicle' && deleteConfirm?.id === v.id ? (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleDeleteVehicle(v.id)}
+                              className="bg-red-600 hover:bg-red-700 text-xs"
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDeleteConfirm(null)}
+                              className="text-xs"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setDeleteConfirm({type: 'vehicle', id: v.id})}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -550,6 +736,7 @@ export default function AdminDashboard() {
                     <th className="text-left p-4 font-semibold">Owner</th>
                     <th className="text-left p-4 font-semibold">Price/Night</th>
                     <th className="text-left p-4 font-semibold">Rooms</th>
+                    <th className="text-left p-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -561,6 +748,36 @@ export default function AdminDashboard() {
                       <td className="p-4">{h.owner_name || 'N/A'}</td>
                       <td className="p-4">৳{Number(h.price_per_night).toLocaleString()}</td>
                       <td className="p-4">{h.available_rooms} available</td>
+                      <td className="p-4">
+                        {deleteConfirm?.type === 'hotel' && deleteConfirm?.id === h.id ? (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleDeleteHotel(h.id)}
+                              className="bg-red-600 hover:bg-red-700 text-xs"
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDeleteConfirm(null)}
+                              className="text-xs"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setDeleteConfirm({type: 'hotel', id: h.id})}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

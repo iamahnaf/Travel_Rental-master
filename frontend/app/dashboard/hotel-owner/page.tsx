@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IncomingRequests } from '@/components/IncomingRequests';
@@ -51,6 +52,7 @@ const initialFormData: HotelFormData = {
 
 export default function HotelOwnerDashboard() {
   const { user, isLoading, logout } = useAuth();
+  const { showToast } = useToast();
   const router = useRouter();
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loadingHotels, setLoadingHotels] = useState(true);
@@ -152,7 +154,7 @@ export default function HotelOwnerDashboard() {
     if (!files || files.length === 0) return;
 
     if (formData.images.length + files.length > 5) {
-      alert('Maximum 5 images allowed');
+      showToast('Maximum 5 images allowed', 'warning');
       return;
     }
 
@@ -164,12 +166,12 @@ export default function HotelOwnerDashboard() {
         const file = files[i];
 
         if (!file.type.startsWith('image/')) {
-          alert(`File ${file.name} is not an image`);
+          showToast(`File ${file.name} is not an image`, 'warning');
           continue;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-          alert(`File ${file.name} is too large (max 5MB)`);
+          showToast(`File ${file.name} is too large (max 5MB)`, 'warning');
           continue;
         }
 
@@ -198,11 +200,11 @@ export default function HotelOwnerDashboard() {
           images: [...prev.images, ...uploadedUrls],
           image_url: prev.image_url || uploadedUrls[0]
         }));
-        alert(`${uploadedUrls.length} image(s) uploaded successfully!`);
+        showToast(`${uploadedUrls.length} image(s) uploaded successfully!`, 'success');
       }
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Error uploading images. Please try again.');
+      showToast('Error uploading images. Please try again.', 'error');
     } finally {
       setUploadingImage(false);
       e.target.value = '';
@@ -253,11 +255,11 @@ export default function HotelOwnerDashboard() {
         fetchHotels();
       } else {
         const data = await res.json();
-        alert(data.message || 'Failed to save hotel');
+        showToast(data.message || 'Failed to save hotel', 'error');
       }
     } catch (err) {
       console.error('Submit error:', err);
-      alert('Error saving hotel');
+      showToast('Error saving hotel', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -279,11 +281,11 @@ export default function HotelOwnerDashboard() {
         fetchHotels();
       } else {
         const data = await res.json();
-        alert(data.message || 'Failed to delete hotel');
+        showToast(data.message || 'Failed to delete hotel', 'error');
       }
     } catch (err) {
       console.error('Delete error:', err);
-      alert('Error deleting hotel');
+      showToast('Error deleting hotel', 'error');
     } finally {
       setDeleting(false);
     }

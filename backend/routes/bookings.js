@@ -9,7 +9,8 @@ const {
   getBusinessBookings,
   acceptBooking,
   rejectBooking,
-  getAllBookings
+  getAllBookings,
+  deleteBooking
 } = require('../controllers/bookingController');
 
 // Protected routes
@@ -21,5 +22,6 @@ router.get('/:id', authenticateToken, getBookingById);
 router.put('/:id/cancel', authenticateToken, cancelBooking);
 router.put('/:id/accept', authenticateToken, acceptBooking);
 router.put('/:id/reject', authenticateToken, rejectBooking);
+router.delete('/:id', authenticateToken, deleteBooking);
 
 module.exports = router;

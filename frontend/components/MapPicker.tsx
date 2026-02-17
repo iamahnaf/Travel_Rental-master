@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { MapPin, X, Loader2, Navigation } from 'lucide-react'
+import { useToast } from '@/contexts/ToastContext'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -20,6 +21,7 @@ interface MapPickerProps {
 }
 
 export function MapPicker({ onLocationSelect, initialLocation, className = '' }: MapPickerProps) {
+  const { showToast } = useToast()
   const mapRef = useRef<L.Map | null>(null)
   const markerRef = useRef<L.Marker | null>(null)
   const mapContainerRef = useRef<HTMLDivElement>(null)
@@ -176,23 +178,63 @@ export function MapPicker({ onLocationSelect, initialLocation, className = '' }:
     onLocationSelect({ lat: 0, lng: 0 })
   }
 
-  const handleUseCurrentLocation = () => {
+  const handleUseCurrentLocation = async () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser')
+      showToast('Geolocation is not supported by your browser', 'error')
       return
     }
 
     setLoading(true)
+    
+    // Check permission status if available
+    if (navigator.permissions) {
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' })
+        
+        if (permissionStatus.state === 'denied') {
+          showToast('Location permission was denied. Please enable it in your browser settings.', 'error')
+          setLoading(false)
+          return
+        }
+        
+        if (permissionStatus.state === 'prompt') {
+          showToast('Please allow location access when prompted by your browser', 'info')
+        }
+      } catch (err) {
+        // Permissions API not supported, continue anyway
+        console.log('Permissions API check failed:', err)
+      }
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const lat = position.coords.latitude
         const lng = position.coords.longitude
         await handleMapClick(lat, lng)
+        setLoading(false)
       },
       (error) => {
-        console.log('Geolocation access denied or unavailable:', error.message)
-        alert('Unable to get your location. Please click on the map or enter coordinates manually.')
+        console.log('Geolocation error:', error)
         setLoading(false)
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            showToast('Location permission denied. Please enable location access in your browser settings and try again.', 'error')
+            break
+          case error.POSITION_UNAVAILABLE:
+            showToast('Location information is unavailable. Please try again or enter location manually.', 'warning')
+            break
+          case error.TIMEOUT:
+            showToast('Location request timed out. Please try again.', 'warning')
+            break
+          default:
+            showToast('Unable to get your location. Please click on the map or enter coordinates manually.', 'warning')
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       }
     )
   }
@@ -228,11 +270,11 @@ export function MapPicker({ onLocationSelect, initialLocation, className = '' }:
       setSearchResults(data)
 
       if (data.length === 0) {
-        alert('No results found. Try a different search term.')
+        showToast('No results found. Try a different search term.', 'info')
       }
     } catch (error) {
       console.error('Search error:', error)
-      alert('Search failed. Please try again.')
+      showToast('Search failed. Please try again.', 'error')
     } finally {
       setIsSearching(false)
     }

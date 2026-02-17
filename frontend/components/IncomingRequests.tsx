@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useToast } from '@/contexts/ToastContext'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
@@ -25,6 +26,7 @@ interface BookingRequest {
 }
 
 export function IncomingRequests() {
+  const { showToast } = useToast()
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [rejectingId, setRejectingId] = useState<number | null>(null)
@@ -73,7 +75,7 @@ export function IncomingRequests() {
 
   const handleReject = async (id: number) => {
     if (!feedback) {
-      alert('Please provide a reason for cancellation')
+      showToast('Please provide a reason for cancellation', 'warning')
       return
     }
 

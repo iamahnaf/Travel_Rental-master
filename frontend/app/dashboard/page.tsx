@@ -3,14 +3,16 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Booking } from '@/types'
 import { Car, Bed, Calendar, MapPin, CheckCircle, Clock, XCircle, FileText, User, LogOut } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 
-function BookingCard({ booking, onCancel }: { booking: any, onCancel: (id: number) => void }) {
+function BookingCard({ booking, onCancel, onDelete }: { booking: any, onCancel: (id: number) => void, onDelete: (id: number) => void }) {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   // Use the booking data directly from API response
   const bookingName = booking.booking_type === 'vehicle' 
     ? `${booking.vehicle_brand || ''} ${booking.vehicle_model || ''}`.trim()
@@ -144,6 +146,26 @@ function BookingCard({ booking, onCancel }: { booking: any, onCancel: (id: numbe
             )}
           </div>
         )}
+
+        {booking.status === 'cancelled' && (
+          <div className="pt-4">
+            {!showDeleteConfirm ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full text-gray-600 border-gray-200 hover:bg-gray-50 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-800"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                Remove from List
+              </Button>
+            ) : (
+              <div className="flex space-x-2">
+                <Button variant="ghost" size="sm" className="flex-1" onClick={() => setShowDeleteConfirm(false)}>No, Keep</Button>
+                <Button variant="primary" size="sm" className="flex-1 bg-gray-600 hover:bg-gray-700" onClick={() => onDelete(booking.id)}>Yes, Remove</Button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Card>
   )
@@ -152,6 +174,7 @@ function BookingCard({ booking, onCancel }: { booking: any, onCancel: (id: numbe
 export default function DashboardPage() {
   const router = useRouter()
   const { user, logout, refreshProfile, isAuthenticated, isLoading } = useAuth()
+  const { showToast } = useToast()
   const [bookings, setBookings] = useState<any[]>([])
   const [bookingsLoading, setBookingsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'bookings' | 'profile'>('bookings')
@@ -239,13 +262,21 @@ export default function DashboardPage() {
       })
       if (response.ok) {
         setBookings(bookings.map(b => b.id === id ? { ...b, status: 'cancelled' } : b))
+        showToast('Booking cancelled successfully', 'success')
       } else {
         const data = await response.json()
-        alert(data.message || 'Failed to cancel booking')
+        showToast(data.message || 'Failed to cancel booking', 'error')
       }
     } catch (error) {
       console.error('Failed to cancel booking:', error)
+      showToast('Failed to cancel booking', 'error')
     }
+  }
+
+  const handleDeleteBooking = (id: number) => {
+    // Simply hide the cancelled booking from view (doesn't delete from database)
+    setBookings(bookings.filter(b => b.id !== id))
+    showToast('Booking removed from view', 'success')
   }
 
   // Show loading state while checking authentication
@@ -341,7 +372,7 @@ export default function DashboardPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {bookings.map((booking) => (
-                  <BookingCard key={booking.id} booking={booking} onCancel={handleCancelBooking} />
+                  <BookingCard key={booking.id} booking={booking} onCancel={handleCancelBooking} onDelete={handleDeleteBooking} />
                 ))}
               </div>
             )}

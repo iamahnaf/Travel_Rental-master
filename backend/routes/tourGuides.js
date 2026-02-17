@@ -6,7 +6,8 @@ const {
   getTourGuideById, 
   getAvailableTourGuides,
   getTourGuideByUserId,
-  updateTourGuideProfile
+  updateTourGuideProfile,
+  deleteTourGuide
 } = require('../controllers/tourGuideController');
 
 // Public routes
@@ -19,5 +20,6 @@ router.put('/profile/update', authenticateToken, updateTourGuideProfile);
 
 // This must come last
 router.get('/:id', getTourGuideById);
+router.delete('/:id', authenticateToken, deleteTourGuide);
 
 module.exports = router;

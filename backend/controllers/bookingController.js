@@ -702,6 +702,61 @@ const getAllBookings = async (req, res) => {
   }
 };
 
+// Delete booking (admin can delete any, users can delete their own cancelled bookings)
+const deleteBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Check if booking exists and get booking details
+    const checkQuery = 'SELECT id, user_id, status FROM bookings WHERE id = ?';
+    const [rows] = await pool.execute(checkQuery, [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    const booking = rows[0];
+
+    // Admin can delete any booking
+    if (userRole === 'admin') {
+      await pool.execute('DELETE FROM bookings WHERE id = ?', [id]);
+      return res.status(200).json({
+        success: true,
+        message: 'Booking deleted successfully'
+      });
+    }
+
+    // Regular users can only delete their own cancelled bookings
+    if (booking.user_id !== userId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You can only delete your own bookings' 
+      });
+    }
+
+    if (booking.status !== 'cancelled') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'You can only delete cancelled bookings' 
+      });
+    }
+
+    await pool.execute('DELETE FROM bookings WHERE id = ?', [id]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Booking deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete booking error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getUserBookings,
@@ -710,5 +765,6 @@ module.exports = {
   getBusinessBookings,
   acceptBooking,
   rejectBooking,
-  getAllBookings
+  getAllBookings,
+  deleteBooking
 };

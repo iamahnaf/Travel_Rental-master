@@ -341,12 +341,22 @@ const deleteHotel = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.userId;
+    const userRole = req.user.role;
 
-    // Check ownership
-    const checkQuery = 'SELECT id FROM hotels WHERE id = ? AND user_id = ?';
-    const [rows] = await pool.execute(checkQuery, [id, userId]);
-    if (rows.length === 0) {
-      return res.status(403).json({ success: false, message: 'Unauthorized or hotel not found' });
+    // Admin can delete any hotel, otherwise check ownership
+    if (userRole !== 'admin') {
+      const checkQuery = 'SELECT id FROM hotels WHERE id = ? AND user_id = ?';
+      const [rows] = await pool.execute(checkQuery, [id, userId]);
+      if (rows.length === 0) {
+        return res.status(403).json({ success: false, message: 'Unauthorized or hotel not found' });
+      }
+    } else {
+      // Admin: just check if hotel exists
+      const checkQuery = 'SELECT id FROM hotels WHERE id = ?';
+      const [rows] = await pool.execute(checkQuery, [id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Hotel not found' });
+      }
     }
 
     await pool.execute('DELETE FROM hotels WHERE id = ?', [id]);

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ToastProvider } from '@/contexts/ToastContext'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 
@@ -23,11 +24,13 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>
-            <Navbar />
-            <main className="min-h-screen">
-              {children}
-            </main>
-            <Footer />
+            <ToastProvider>
+              <Navbar />
+              <main className="min-h-screen">
+                {children}
+              </main>
+              <Footer />
+            </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

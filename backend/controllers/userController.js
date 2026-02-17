@@ -269,10 +269,56 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// Delete user (admin only)
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userRole = req.user.role;
+    const currentUserId = req.user.userId;
+
+    // Only admin can delete users
+    if (userRole !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'Only admin can delete users' 
+      });
+    }
+
+    // Check if user exists
+    const checkQuery = 'SELECT id, role FROM users WHERE id = ?';
+    const [rows] = await pool.execute(checkQuery, [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Prevent admin from deleting themselves
+    if (parseInt(id) === currentUserId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Cannot delete your own account' 
+      });
+    }
+
+    await pool.execute('DELETE FROM users WHERE id = ?', [id]);
+
+    res.status(200).json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
-  getAllUsers
+  getAllUsers,
+  deleteUser
 };

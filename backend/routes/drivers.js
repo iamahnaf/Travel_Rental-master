@@ -6,7 +6,8 @@ const {
   getDriverById, 
   getAvailableDrivers,
   getDriverByUserId,
-  updateDriverProfile
+  updateDriverProfile,
+  deleteDriver
 } = require('../controllers/driverController');
 
 // Public routes
@@ -19,5 +20,6 @@ router.put('/profile/update', authenticateToken, updateDriverProfile);
 
 // This must come last
 router.get('/:id', getDriverById);
+router.delete('/:id', authenticateToken, deleteDriver);
 
 module.exports = router;

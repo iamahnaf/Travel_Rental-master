@@ -177,10 +177,49 @@ const updateTourGuideProfile = async (req, res) => {
   }
 };
 
+// Delete tour guide (admin only or owner)
+const deleteTourGuide = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const userRole = req.user.role;
+
+    // Admin can delete any tour guide, otherwise check ownership
+    if (userRole !== 'admin') {
+      const checkQuery = 'SELECT id FROM tour_guides WHERE id = ? AND user_id = ?';
+      const [rows] = await pool.execute(checkQuery, [id, userId]);
+      if (rows.length === 0) {
+        return res.status(403).json({ success: false, message: 'Unauthorized or tour guide not found' });
+      }
+    } else {
+      // Admin: just check if tour guide exists
+      const checkQuery = 'SELECT id FROM tour_guides WHERE id = ?';
+      const [rows] = await pool.execute(checkQuery, [id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Tour guide not found' });
+      }
+    }
+
+    await pool.execute('DELETE FROM tour_guides WHERE id = ?', [id]);
+
+    res.status(200).json({
+      success: true,
+      message: 'Tour guide deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete tour guide error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   getAllTourGuides,
   getTourGuideById,
   getAvailableTourGuides,
   getTourGuideByUserId,
-  updateTourGuideProfile
+  updateTourGuideProfile,
+  deleteTourGuide
 };

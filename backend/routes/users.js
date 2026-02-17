@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, getUserProfile, updateUserProfile, getAllUsers } = require('../controllers/userController');
+const { registerUser, loginUser, getUserProfile, updateUserProfile, getAllUsers, deleteUser } = require('../controllers/userController');
 const { authenticateToken } = require('../utils/jwt');
 const { validateRegister, validateLogin } = require('../middleware/validation');
 
@@ -14,5 +14,6 @@ router.put('/profile', authenticateToken, updateUserProfile);
 
 // Admin routes
 router.get('/', authenticateToken, getAllUsers);
+router.delete('/:id', authenticateToken, deleteUser);
 
 module.exports = router;

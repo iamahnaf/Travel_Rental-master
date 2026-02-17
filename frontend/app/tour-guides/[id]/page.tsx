@@ -8,6 +8,7 @@ import { TourGuide } from '@/types'
 import { PromoCode, calculateDiscount } from '@/lib/promoCodes'
 import { MapPin, Star, User, ChevronLeft, Languages, Award, Calendar, CheckCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Reviews } from '@/components/Reviews'
@@ -18,6 +19,7 @@ export default function TourGuideDetailsPage() {
   const router = useRouter()
   const guideId = params.id as string
   const { user } = useAuth()
+  const { showToast } = useToast()
   const [guide, setGuide] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -81,7 +83,7 @@ export default function TourGuideDetailsPage() {
       // Check if user is a business account
       const businessRoles = ['car_owner', 'hotel_owner', 'driver', 'tour_guide']
       if (user && businessRoles.includes(user.role)) {
-        alert('Business accounts cannot book services. Please create or log in with a Traveler account.')
+        showToast('Business accounts cannot book services. Please create or log in with a Traveler account.', 'warning')
         return
       }
 
@@ -106,14 +108,14 @@ export default function TourGuideDetailsPage() {
       const data = await response.json()
 
       if (response.ok) {
-        alert('Tour guide booking successful!')
+        showToast('Tour guide booking successful!', 'success')
         router.push('/dashboard')
       } else {
-        alert(data.message || 'Booking failed. Please try again.')
+        showToast(data.message || 'Booking failed. Please try again.', 'error')
       }
     } catch (error) {
       console.error('Booking error:', error)
-      alert('An error occurred while creating the booking')
+      showToast('An error occurred while creating the booking', 'error')
     }
   }
 

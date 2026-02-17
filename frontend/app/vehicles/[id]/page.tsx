@@ -7,6 +7,7 @@ import { Vehicle, Driver } from '@/types'
 import { PromoCode, calculateDiscount } from '@/lib/promoCodes'
 import { Car, Users, Fuel, Calendar, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { DriverSelection } from '@/components/DriverSelection'
@@ -20,6 +21,7 @@ export default function VehicleDetailsPage() {
   const router = useRouter()
   const vehicleId = params.id as string
   const { user, isAuthenticated } = useAuth()
+  const { showToast } = useToast()
   const [vehicle, setVehicle] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [drivers, setDrivers] = useState<any[]>([])
@@ -147,7 +149,7 @@ export default function VehicleDetailsPage() {
     // Check if user is a business account
     const businessRoles = ['car_owner', 'hotel_owner', 'driver', 'tour_guide']
     if (businessRoles.includes(user.role)) {
-      alert('Business accounts cannot book services. Please create or log in with a Traveler account.')
+      showToast('Business accounts cannot book services. Please create or log in with a Traveler account.', 'warning')
       return
     }
 
@@ -195,7 +197,7 @@ export default function VehicleDetailsPage() {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        alert('Please login to complete booking')
+        showToast('Please login to complete booking', 'warning')
         router.push('/login')
         return
       }
@@ -228,15 +230,15 @@ export default function VehicleDetailsPage() {
       const data = await response.json()
 
       if (response.ok) {
-        alert('Booking successful!')
+        showToast('Booking successful!', 'success')
         router.push('/dashboard')
       } else {
         console.error('Booking failed:', data)
-        alert(data.message || data.error || 'Booking failed. Please try again.')
+        showToast(data.message || data.error || 'Booking failed. Please try again.', 'error')
       }
     } catch (error: any) {
       console.error('Booking error:', error)
-      alert('An error occurred while creating the booking: ' + (error.message || 'Unknown error'))
+      showToast('An error occurred while creating the booking: ' + (error.message || 'Unknown error'), 'error')
     }
   }
 

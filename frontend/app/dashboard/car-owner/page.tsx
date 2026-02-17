@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IncomingRequests } from '@/components/IncomingRequests';
@@ -56,6 +57,7 @@ const initialFormData: VehicleFormData = {
 
 export default function CarOwnerDashboard() {
   const { user, isLoading, logout } = useAuth();
+  const { showToast } = useToast();
   const router = useRouter();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(true);
@@ -160,7 +162,7 @@ export default function CarOwnerDashboard() {
 
     // Validate number of images
     if (formData.images.length + files.length > 5) {
-      alert('Maximum 5 images allowed');
+      showToast('Maximum 5 images allowed', 'warning');
       return;
     }
 
@@ -173,13 +175,13 @@ export default function CarOwnerDashboard() {
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-          alert(`File ${file.name} is not an image`);
+          showToast(`File ${file.name} is not an image`, 'warning');
           continue;
         }
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-          alert(`File ${file.name} is too large (max 5MB)`);
+          showToast(`File ${file.name} is too large (max 5MB)`, 'warning');
           continue;
         }
 
@@ -208,11 +210,11 @@ export default function CarOwnerDashboard() {
           images: [...prev.images, ...uploadedUrls],
           image_url: prev.image_url || uploadedUrls[0]
         }));
-        alert(`${uploadedUrls.length} image(s) uploaded successfully!`);
+        showToast(`${uploadedUrls.length} image(s) uploaded successfully!`, 'success');
       }
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Error uploading images. Please try again.');
+      showToast('Error uploading images. Please try again.', 'error');
     } finally {
       setUploadingImage(false);
       e.target.value = '';
@@ -261,11 +263,11 @@ export default function CarOwnerDashboard() {
         fetchVehicles();
       } else {
         const data = await res.json();
-        alert(data.message || 'Failed to save vehicle');
+        showToast(data.message || 'Failed to save vehicle', 'error');
       }
     } catch (err) {
       console.error('Submit error:', err);
-      alert('Error saving vehicle');
+      showToast('Error saving vehicle', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -287,11 +289,11 @@ export default function CarOwnerDashboard() {
         fetchVehicles();
       } else {
         const data = await res.json();
-        alert(data.message || 'Failed to delete vehicle');
+        showToast(data.message || 'Failed to delete vehicle', 'error');
       }
     } catch (err) {
       console.error('Delete error:', err);
-      alert('Error deleting vehicle');
+      showToast('Error deleting vehicle', 'error');
     } finally {
       setDeleting(false);
     }

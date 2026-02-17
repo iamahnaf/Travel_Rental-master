@@ -8,6 +8,7 @@ import { Hotel } from '@/types'
 import { PromoCode, calculateDiscount } from '@/lib/promoCodes'
 import { MapPin, Star, Bed, ChevronLeft, ChevronRight, Wifi, UtensilsCrossed, Lock, Clock, Car } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Reviews } from '@/components/Reviews'
@@ -19,6 +20,7 @@ export default function HotelDetailsPage() {
   const router = useRouter()
   const hotelId = params.id as string
   const { user } = useAuth()
+  const { showToast } = useToast()
   const [hotel, setHotel] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -130,7 +132,7 @@ export default function HotelDetailsPage() {
     // Check if user is a business account
     const businessRoles = ['car_owner', 'hotel_owner', 'driver', 'tour_guide']
     if (user && businessRoles.includes(user.role)) {
-      alert('Business accounts cannot book services. Please create or log in with a Traveler account.')
+      showToast('Business accounts cannot book services. Please create or log in with a Traveler account.', 'warning')
       return
     }
 
@@ -161,7 +163,7 @@ export default function HotelDetailsPage() {
     try {
       const token = localStorage.getItem('token')
       if (!token) {
-        alert('Please login to complete booking')
+        showToast('Please login to complete booking', 'warning')
         router.push('/login')
         return
       }
@@ -188,14 +190,14 @@ export default function HotelDetailsPage() {
 
       if (response.ok) {
         setShowNIDUpload(false)
-        alert('Hotel booking successful!')
+        showToast('Hotel booking successful!', 'success')
         router.push('/dashboard')
       } else {
-        alert(data.message || 'Booking failed. Please try again.')
+        showToast(data.message || 'Booking failed. Please try again.', 'error')
       }
     } catch (error) {
       console.error('Booking error:', error)
-      alert('An error occurred while creating the booking')
+      showToast('An error occurred while creating the booking', 'error')
     }
   }
 
