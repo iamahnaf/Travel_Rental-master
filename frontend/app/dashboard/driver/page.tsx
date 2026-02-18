@@ -12,7 +12,7 @@ import { IncomingRequests } from '@/components/IncomingRequests'
 
 export default function DriverDashboard() {
   const router = useRouter()
-  const { user, logout, isAuthenticated, isLoading } = useAuth()
+  const { user, logout, isAuthenticated, isLoading, refreshProfile } = useAuth()
   const [stats, setStats] = useState({
     totalEarnings: 0,
     totalTrips: 0,
@@ -81,6 +81,7 @@ export default function DriverDashboard() {
       if (data.success) {
         setIsEditing(false)
         fetchDriverData()
+        await refreshProfile() // Refresh auth context to update name in header
       }
     } catch (error) {
       console.error('Failed to update profile:', error)
@@ -142,20 +143,20 @@ export default function DriverDashboard() {
             <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
             <form onSubmit={handleUpdateProfile} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Full Name</label>
-                <input required className="w-full border rounded p-2" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">Full Name</label>
+                <input required className="w-full border rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">City</label>
-                <input required className="w-full border rounded p-2" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">City</label>
+                <input required className="w-full border rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Experience (Years)</label>
-                <input type="number" required className="w-full border rounded p-2" value={formData.experience_years} onChange={e => setFormData({...formData, experience_years: Number(e.target.value)})} />
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">Experience (Years)</label>
+                <input type="number" required className="w-full border rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600" value={formData.experience_years} onChange={e => setFormData({...formData, experience_years: Number(e.target.value)})} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Price per Day ($)</label>
-                <input type="number" required className="w-full border rounded p-2" value={formData.price_per_day} onChange={e => setFormData({...formData, price_per_day: Number(e.target.value)})} />
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">Price per Day ($)</label>
+                <input type="number" required className="w-full border rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600" value={formData.price_per_day} onChange={e => setFormData({...formData, price_per_day: Number(e.target.value)})} />
               </div>
               <div className="col-span-2">
                 <FileUpload
@@ -176,8 +177,8 @@ export default function DriverDashboard() {
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium mb-1">Bio</label>
-                <textarea className="w-full border rounded p-2" rows={3} value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} />
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-gray-100">Bio</label>
+                <textarea className="w-full border rounded p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600" rows={3} value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} />
               </div>
               <div className="col-span-2 flex justify-end gap-3 mt-4">
                 <Button type="submit" className="flex items-center gap-2">

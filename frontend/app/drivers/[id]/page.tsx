@@ -119,7 +119,17 @@ export default function DriverDetailsPage() {
     }
   }
 
-  const languages = Array.isArray(driver.languages) ? driver.languages : (typeof driver.languages === 'string' ? JSON.parse(driver.languages) : ['Bengali', 'English'])
+  let languages: string[] = ['Bengali', 'English'];
+  if (Array.isArray(driver.languages)) {
+    languages = driver.languages;
+  } else if (typeof driver.languages === 'string') {
+    try {
+      const parsed = JSON.parse(driver.languages);
+      languages = Array.isArray(parsed) ? parsed : ['Bengali', 'English'];
+    } catch {
+      languages = ['Bengali', 'English'];
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">

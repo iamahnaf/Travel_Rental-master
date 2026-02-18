@@ -119,8 +119,29 @@ export default function TourGuideDetailsPage() {
     }
   }
 
-  const languages = Array.isArray(guide.languages) ? guide.languages : (typeof guide.languages === 'string' ? JSON.parse(guide.languages) : ['Bengali', 'English'])
-  const specialties = Array.isArray(guide.specialties) ? guide.specialties : (typeof guide.specialties === 'string' ? JSON.parse(guide.specialties) : [])
+  let languages: string[] = ['Bengali', 'English'];
+  if (Array.isArray(guide.languages)) {
+    languages = guide.languages;
+  } else if (typeof guide.languages === 'string') {
+    try {
+      const parsed = JSON.parse(guide.languages);
+      languages = Array.isArray(parsed) ? parsed : ['Bengali', 'English'];
+    } catch {
+      languages = ['Bengali', 'English'];
+    }
+  }
+
+  let specialties: string[] = [];
+  if (Array.isArray(guide.specialties)) {
+    specialties = guide.specialties;
+  } else if (typeof guide.specialties === 'string') {
+    try {
+      const parsed = JSON.parse(guide.specialties);
+      specialties = Array.isArray(parsed) ? parsed : [];
+    } catch {
+      specialties = [];
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">

@@ -106,14 +106,29 @@ export function DriverSelection({
                       {driver.experience_years || 0} years experience
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      {(Array.isArray(driver.languages) ? driver.languages : (typeof driver.languages === 'string' ? JSON.parse(driver.languages) : ['Bengali', 'English'])).map((lang: string) => (
+                      {(() => {
+                        let languages: string[] = [];
+                        if (Array.isArray(driver.languages)) {
+                          languages = driver.languages;
+                        } else if (typeof driver.languages === 'string') {
+                          try {
+                            const parsed = JSON.parse(driver.languages);
+                            languages = Array.isArray(parsed) ? parsed : ['Bengali', 'English'];
+                          } catch {
+                            languages = ['Bengali', 'English'];
+                          }
+                        } else {
+                          languages = ['Bengali', 'English'];
+                        }
+                        return languages.map((lang: string) => (
                         <span
                           key={lang}
                           className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs rounded text-gray-600 dark:text-gray-400"
                         >
                           {lang}
                         </span>
-                      ))}
+                        ));
+                      })()}
                     </div>
                   </div>
                 </div>

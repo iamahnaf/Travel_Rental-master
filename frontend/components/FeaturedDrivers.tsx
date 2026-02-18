@@ -80,7 +80,19 @@ function DriverCard({ driver, index }: { driver: any; index: number }) {
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <Languages className="w-4 h-4" />
-              <span>{Array.isArray(driver.languages) ? driver.languages.join(', ') : (typeof driver.languages === 'string' ? JSON.parse(driver.languages).join(', ') : 'Bengali, English')}</span>
+              <span>{(() => {
+                if (Array.isArray(driver.languages)) return driver.languages.join(', ');
+                if (typeof driver.languages === 'string') {
+                  try {
+                    const parsed = JSON.parse(driver.languages);
+                    if (Array.isArray(parsed)) return parsed.join(', ');
+                    return driver.languages;
+                  } catch {
+                    return driver.languages;
+                  }
+                }
+                return 'Bengali, English';
+              })()}</span>
             </div>
             <div className="flex items-center justify-between pt-2">
               <div>

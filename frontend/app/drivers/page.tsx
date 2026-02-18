@@ -90,7 +90,19 @@ function DriverCard({ driver, index }: { driver: any; index: number }) {
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                 <Languages className="w-4 h-4" />
-                <span>{Array.isArray(driver.languages) ? driver.languages.join(', ') : (typeof driver.languages === 'string' ? JSON.parse(driver.languages).join(', ') : 'Bengali, English')}</span>
+                <span>{(() => {
+                  if (Array.isArray(driver.languages)) return driver.languages.join(', ');
+                  if (typeof driver.languages === 'string') {
+                    try {
+                      const parsed = JSON.parse(driver.languages);
+                      if (Array.isArray(parsed)) return parsed.join(', ');
+                      return driver.languages;
+                    } catch {
+                      return driver.languages;
+                    }
+                  }
+                  return 'Bengali, English';
+                })()}</span>
               </div>
               <div className="flex items-center justify-between pt-2">
                 <div>
@@ -143,7 +155,17 @@ export default function DriversPage() {
       const price = parseFloat(driver.price_per_day || driver.pricePerDay || 1500)
       const rating = parseFloat(driver.rating)
       const city = driver.city || ''
-      const languages = Array.isArray(driver.languages) ? driver.languages : (typeof driver.languages === 'string' ? JSON.parse(driver.languages) : [])
+      let languages: string[] = []
+      if (Array.isArray(driver.languages)) {
+        languages = driver.languages
+      } else if (typeof driver.languages === 'string') {
+        try {
+          const parsed = JSON.parse(driver.languages)
+          languages = Array.isArray(parsed) ? parsed : [driver.languages]
+        } catch {
+          languages = [driver.languages]
+        }
+      }
 
       if (filters.location && !city.toLowerCase().includes(filters.location.toLowerCase())) return false
       if (filters.minPrice && price < parseInt(filters.minPrice)) return false

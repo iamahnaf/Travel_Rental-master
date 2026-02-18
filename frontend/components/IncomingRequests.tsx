@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Calendar, MapPin, User, MessageSquare, CheckCircle, XCircle } from 'lucide-react'
+import { Calendar, MapPin, User, MessageSquare, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 
 interface BookingRequest {
   id: number
@@ -30,6 +30,7 @@ export function IncomingRequests() {
   const [requests, setRequests] = useState<BookingRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [rejectingId, setRejectingId] = useState<number | null>(null)
+  const [clearingId, setClearingId] = useState<number | null>(null)
   const [feedback, setFeedback] = useState('')
 
   useEffect(() => {
@@ -94,9 +95,23 @@ export function IncomingRequests() {
         setRequests(requests.map(req => req.id === id ? { ...req, status: 'cancelled' } : req))
         setRejectingId(null)
         setFeedback('')
+        showToast('Booking cancelled successfully', 'success')
       }
     } catch (error) {
       console.error('Failed to reject booking:', error)
+      showToast('Failed to cancel booking', 'error')
+    }
+  }
+
+  const handleClear = async (id: number) => {
+    try {
+      // Simply remove from the local state (client-side only)
+      setRequests(requests.filter(req => req.id !== id))
+      setClearingId(null)
+      showToast('Booking removed from list', 'success')
+    } catch (error) {
+      console.error('Failed to clear booking:', error)
+      showToast('Failed to remove booking', 'error')
     }
   }
 
@@ -183,6 +198,39 @@ export function IncomingRequests() {
                   >
                     Reject
                   </Button>
+                </div>
+              )}
+
+              {request.status === 'cancelled' && (
+                <div className="w-full">
+                  {clearingId === request.id ? (
+                    <div className="flex space-x-2">
+                      <Button 
+                        className="flex-1 bg-red-600 hover:bg-red-700 border-none text-white" 
+                        size="sm"
+                        onClick={() => handleClear(request.id)}
+                      >
+                        Confirm
+                      </Button>
+                      <Button 
+                        className="flex-1" 
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setClearingId(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      className="w-full border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20" 
+                      variant="outline"
+                      onClick={() => setClearingId(request.id)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Clear from List
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

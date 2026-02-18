@@ -226,6 +226,11 @@ const updateDriverProfile = async (req, res) => {
     const userId = req.user.userId;
     const { name, experience_years, city, location, bio, price_per_day, languages, available, photo_url, license_url } = req.body;
     
+    // Update user's name in users table as well
+    if (name) {
+      await pool.execute('UPDATE users SET name = ? WHERE id = ?', [name, userId]);
+    }
+    
     // Build dynamic query to handle potentially missing license_url column
     let query;
     let params;
@@ -271,6 +276,11 @@ const updateDriverProfile = async (req, res) => {
         // Try updating without license_url field
         const userId = req.user.userId;
         const { name, experience_years, city, location, bio, price_per_day, languages, available, photo_url } = req.body;
+        
+        // Update user's name in users table as well
+        if (name) {
+          await pool.execute('UPDATE users SET name = ? WHERE id = ?', [name, userId]);
+        }
         
         const fallbackQuery = `
           UPDATE drivers SET 

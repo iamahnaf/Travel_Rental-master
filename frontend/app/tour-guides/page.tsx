@@ -89,17 +89,30 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {(Array.isArray(guide.specialties) ? guide.specialties : (typeof guide.specialties === 'string' ? JSON.parse(guide.specialties) : [])).slice(0, 2).map((specialty: string, i: number) => (
-                  <motion.span
-                    key={specialty}
-                    className="px-2 py-1 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded text-xs"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
-                  >
-                    {specialty}
-                  </motion.span>
-                ))}
+                {(() => {
+                  let specialties: string[] = [];
+                  if (Array.isArray(guide.specialties)) {
+                    specialties = guide.specialties;
+                  } else if (typeof guide.specialties === 'string') {
+                    try {
+                      const parsed = JSON.parse(guide.specialties);
+                      specialties = Array.isArray(parsed) ? parsed : [];
+                    } catch {
+                      specialties = [];
+                    }
+                  }
+                  return specialties.slice(0, 2).map((specialty: string, i: number) => (
+                    <motion.span
+                      key={specialty}
+                      className="px-2 py-1 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded text-xs"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.3 + i * 0.1 }}
+                    >
+                      {specialty}
+                    </motion.span>
+                  ));
+                })()}
               </div>
               <div className="flex items-center justify-between pt-2">
                 <div>
@@ -152,7 +165,17 @@ export default function TourGuidesPage() {
       const price = parseFloat(guide.price_per_day || guide.pricePerDay || 2000)
       const rating = parseFloat(guide.rating)
       const city = guide.city || ''
-      const specialties = Array.isArray(guide.specialties) ? guide.specialties : (typeof guide.specialties === 'string' ? JSON.parse(guide.specialties) : [])
+      let specialties: string[] = []
+      if (Array.isArray(guide.specialties)) {
+        specialties = guide.specialties
+      } else if (typeof guide.specialties === 'string') {
+        try {
+          const parsed = JSON.parse(guide.specialties)
+          specialties = Array.isArray(parsed) ? parsed : []
+        } catch {
+          specialties = []
+        }
+      }
 
       if (filters.location && !city.toLowerCase().includes(filters.location.toLowerCase())) return false
       if (filters.minPrice && price < parseInt(filters.minPrice)) return false

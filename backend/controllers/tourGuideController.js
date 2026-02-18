@@ -158,6 +158,11 @@ const updateTourGuideProfile = async (req, res) => {
     const userId = req.user.userId;
     const { name, experience_years, city, location, bio, price_per_day, languages, specialties, available } = req.body;
     
+    // Update user's name in users table as well
+    if (name) {
+      await pool.execute('UPDATE users SET name = ? WHERE id = ?', [name, userId]);
+    }
+    
     const query = `
       UPDATE tour_guides SET 
         name = ?, experience_years = ?, city = ?, location = ?, 

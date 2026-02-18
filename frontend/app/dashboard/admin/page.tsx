@@ -49,7 +49,7 @@ export default function AdminDashboard() {
   const router = useRouter()
   const { user, logout, isAuthenticated, isLoading } = useAuth()
   const { showToast } = useToast()
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'bookings' | 'vehicles' | 'hotels' | 'verifications'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'bookings' | 'vehicles' | 'hotels' | 'drivers' | 'tourGuides' | 'verifications'>('overview')
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0, totalVehicles: 0, totalHotels: 0, totalDrivers: 0,
@@ -60,6 +60,8 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [vehicles, setVehicles] = useState<any[]>([])
   const [hotels, setHotels] = useState<any[]>([])
+  const [drivers, setDrivers] = useState<any[]>([])
+  const [tourGuides, setTourGuides] = useState<any[]>([])
   const [nids, setNids] = useState<any[]>([])
   const [licenses, setLicenses] = useState<any[]>([])
   const [deleteConfirm, setDeleteConfirm] = useState<{type: string, id: number} | null>(null)
@@ -128,10 +130,12 @@ export default function AdminDashboard() {
       if (driversRes?.ok) {
         const data = await driversRes.json()
         driversData = data.data || []
+        setDrivers(driversData)
       }
       if (tourGuidesRes?.ok) {
         const data = await tourGuidesRes.json()
         tourGuidesData = data.data || []
+        setTourGuides(tourGuidesData)
       }
       if (nidsRes?.ok) {
         const data = await nidsRes.json()
@@ -315,6 +319,50 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleDeleteDriver = async (id: number) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5001/api/drivers/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setDrivers(drivers.filter(d => d.id !== id))
+        setStats(prev => ({ ...prev, totalDrivers: prev.totalDrivers - 1 }))
+        setDeleteConfirm(null)
+        showToast('Driver deleted successfully', 'success')
+      } else {
+        showToast(data.message || 'Failed to delete driver', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting driver:', error)
+      showToast('Error deleting driver', 'error')
+    }
+  }
+
+  const handleDeleteTourGuide = async (id: number) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5001/api/tour-guides/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setTourGuides(tourGuides.filter(t => t.id !== id))
+        setStats(prev => ({ ...prev, totalTourGuides: prev.totalTourGuides - 1 }))
+        setDeleteConfirm(null)
+        showToast('Tour guide deleted successfully', 'success')
+      } else {
+        showToast(data.message || 'Failed to delete tour guide', 'error')
+      }
+    } catch (error) {
+      console.error('Error deleting tour guide:', error)
+      showToast('Error deleting tour guide', 'error')
+    }
+  }
+
   const handleDeleteBooking = async (id: number) => {
     try {
       const token = localStorage.getItem('token')
@@ -380,7 +428,9 @@ export default function AdminDashboard() {
             { key: 'bookings', label: 'Bookings', icon: Calendar },
             { key: 'vehicles', label: 'Vehicles', icon: Car },
             { key: 'hotels', label: 'Hotels', icon: Building2 },
-            { key: 'verifications', label: 'Verifications', icon: UserCheck },
+            { key: 'drivers', label: 'Drivers', icon: UserCheck },
+            { key: 'tourGuides', label: 'Tour Guides', icon: MapPin },
+            { key: 'verifications', label: 'Verifications', icon: Shield },
           ].map(tab => (
             <Button
               key={tab.key}
@@ -784,6 +834,138 @@ export default function AdminDashboard() {
               </table>
               {hotels.length === 0 && (
                 <p className="text-center py-8 text-gray-500">No hotels found</p>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {/* Drivers Tab */}
+        {activeTab === 'drivers' && (
+          <Card>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b dark:border-gray-700">
+                    <th className="text-left p-4 font-semibold">ID</th>
+                    <th className="text-left p-4 font-semibold">Name</th>
+                    <th className="text-left p-4 font-semibold">City</th>
+                    <th className="text-left p-4 font-semibold">Experience</th>
+                    <th className="text-left p-4 font-semibold">Rating</th>
+                    <th className="text-left p-4 font-semibold">Price/Day</th>
+                    <th className="text-left p-4 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {drivers.map(d => (
+                    <tr key={d.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="p-4">{d.id}</td>
+                      <td className="p-4 font-medium">{d.name}</td>
+                      <td className="p-4">{d.city || 'N/A'}</td>
+                      <td className="p-4">{d.experience_years} years</td>
+                      <td className="p-4">⭐ {d.rating}</td>
+                      <td className="p-4">৳{Number(d.price_per_day).toLocaleString()}</td>
+                      <td className="p-4">
+                        {deleteConfirm?.type === 'driver' && deleteConfirm?.id === d.id ? (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleDeleteDriver(d.id)}
+                              className="bg-red-600 hover:bg-red-700 text-xs"
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDeleteConfirm(null)}
+                              className="text-xs"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setDeleteConfirm({type: 'driver', id: d.id})}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {drivers.length === 0 && (
+                <p className="text-center py-8 text-gray-500">No drivers found</p>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {/* Tour Guides Tab */}
+        {activeTab === 'tourGuides' && (
+          <Card>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b dark:border-gray-700">
+                    <th className="text-left p-4 font-semibold">ID</th>
+                    <th className="text-left p-4 font-semibold">Name</th>
+                    <th className="text-left p-4 font-semibold">City</th>
+                    <th className="text-left p-4 font-semibold">Experience</th>
+                    <th className="text-left p-4 font-semibold">Rating</th>
+                    <th className="text-left p-4 font-semibold">Price/Day</th>
+                    <th className="text-left p-4 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tourGuides.map(t => (
+                    <tr key={t.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="p-4">{t.id}</td>
+                      <td className="p-4 font-medium">{t.name}</td>
+                      <td className="p-4">{t.city || 'N/A'}</td>
+                      <td className="p-4">{t.experience_years} years</td>
+                      <td className="p-4">⭐ {t.rating}</td>
+                      <td className="p-4">৳{Number(t.price_per_day).toLocaleString()}</td>
+                      <td className="p-4">
+                        {deleteConfirm?.type === 'tourGuide' && deleteConfirm?.id === t.id ? (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleDeleteTourGuide(t.id)}
+                              className="bg-red-600 hover:bg-red-700 text-xs"
+                            >
+                              Confirm
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setDeleteConfirm(null)}
+                              className="text-xs"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setDeleteConfirm({type: 'tourGuide', id: t.id})}
+                            className="text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {tourGuides.length === 0 && (
+                <p className="text-center py-8 text-gray-500">No tour guides found</p>
               )}
             </div>
           </Card>

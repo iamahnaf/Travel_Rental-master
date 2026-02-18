@@ -12,7 +12,7 @@ import { IncomingRequests } from '@/components/IncomingRequests'
 
 export default function TourGuideDashboard() {
   const router = useRouter()
-  const { user, logout, isAuthenticated, isLoading } = useAuth()
+  const { user, logout, isAuthenticated, isLoading, refreshProfile } = useAuth()
   const [stats, setStats] = useState({
     totalEarnings: 0,
     totalTours: 0,
@@ -46,8 +46,32 @@ export default function TourGuideDashboard() {
         setProfile(data.data)
         setFormData({
           ...data.data,
-          languages: typeof data.data.languages === 'string' ? JSON.parse(data.data.languages) : data.data.languages || [],
-          specialties: typeof data.data.specialties === 'string' ? JSON.parse(data.data.specialties) : data.data.specialties || []
+          languages: (() => {
+            const langs = data.data.languages;
+            if (Array.isArray(langs)) return langs;
+            if (typeof langs === 'string') {
+              try {
+                const parsed = JSON.parse(langs);
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                return [];
+              }
+            }
+            return [];
+          })(),
+          specialties: (() => {
+            const specs = data.data.specialties;
+            if (Array.isArray(specs)) return specs;
+            if (typeof specs === 'string') {
+              try {
+                const parsed = JSON.parse(specs);
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                return [];
+              }
+            }
+            return [];
+          })()
         })
         setStats({
           totalEarnings: data.data.total_tours * data.data.price_per_day * 0.85,
@@ -85,6 +109,7 @@ export default function TourGuideDashboard() {
       if (data.success) {
         setIsEditing(false)
         fetchTourGuideData()
+        await refreshProfile() // Refresh auth context to update name in header
       }
     } catch (error) {
       console.error('Failed to update profile:', error)

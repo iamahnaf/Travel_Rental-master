@@ -79,7 +79,19 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {(Array.isArray(guide.specialties) ? guide.specialties : (typeof guide.specialties === 'string' ? JSON.parse(guide.specialties) : [])).slice(0, 2).map((specialty: string, i: number) => (
+              {(() => {
+                let specialties: string[] = [];
+                if (Array.isArray(guide.specialties)) {
+                  specialties = guide.specialties;
+                } else if (typeof guide.specialties === 'string') {
+                  try {
+                    const parsed = JSON.parse(guide.specialties);
+                    specialties = Array.isArray(parsed) ? parsed : [];
+                  } catch {
+                    specialties = [];
+                  }
+                }
+                return specialties.slice(0, 2).map((specialty: string, i: number) => (
                 <motion.span
                   key={specialty}
                   className="px-2 py-1 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 rounded text-xs"
@@ -90,7 +102,8 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
                 >
                   {specialty}
                 </motion.span>
-              ))}
+                ));
+              })()}
             </div>
             <div className="flex items-center justify-between pt-2">
               <div>
