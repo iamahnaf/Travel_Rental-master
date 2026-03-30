@@ -1,20 +1,20 @@
-# TravelRen: B2B + B2C Tour, Transport, and Stay Marketplace
+# TravelRen: B2B + B2C Tour, Transport, and Stay Marketplace 🌍
 
 TravelRen is a full-stack marketplace platform for travel services.
 It helps travelers book complete trip services and helps business owners grow by listing and managing their services.
 
 This platform supports:
-- Car rental with driver
-- Car rental without driver
-- Hotel booking
-- Driver booking
-- Tour guide booking
+- 🚗 Car rental with driver
+- 🚙 Car rental without driver
+- 🏨 Hotel booking
+- 🧑‍✈️ Driver booking
+- 🗺️ Tour guide booking
 
 It is designed as a B2B + B2C business model:
-- B2C: Travelers directly book services.
-- B2B: Service providers (car owners, hotel owners, drivers, tour guides) manage listings and booking requests.
+- 🧳 B2C: Travelers directly book services.
+- 💼 B2B: Service providers (car owners, hotel owners, drivers, tour guides) manage listings and booking requests.
 
-## Business Concept
+## 💡 Business Concept
 
 TravelRen solves two problems in one ecosystem:
 - Travelers need a trusted, all-in-one booking platform for transport, lodging, and guided trips.
@@ -22,60 +22,60 @@ TravelRen solves two problems in one ecosystem:
 
 The platform connects both sides with role-based accounts, booking workflows, and real-time request management.
 
-## Target Users
+## 👥 Target Users
 
-### 1. Travelers (Customers)
+### 1. 🧳 Travelers (Customers)
 - Browse vehicles, hotels, drivers, and tour guides
 - Book services by date
 - Rent cars with or without driver
 - Add pickup and destination for vehicle bookings
 - Track and manage bookings
 
-### 2. Business Partners
+### 2. 🤝 Business Partners
 - Car Owners: list vehicles and manage rental requests
 - Hotel Owners: list hotels, manage rooms, and accept/reject bookings
 - Drivers: manage profile and accept/reject trip requests
 - Tour Guides: manage profile and accept/reject tour requests
 
-### 3. Admin
+### 3. 🛡️ Admin
 - Verify and approve NID and driving license submissions
 - Maintain trust and compliance in the platform
 
-## Core Features
+## ✨ Core Features
 
-- Multi-role authentication and authorization
-- Role-specific dashboards
-- Booking system for multiple service types
-- Booking request lifecycle: pending, confirmed, completed, cancelled
-- Promo code validation and discount support
-- License and NID upload with verification workflow
-- Multi-image upload support for listings
-- Map-based pickup and destination selection for vehicles
-- Responsive web UI for desktop and mobile
+- 🔐 Multi-role authentication and authorization
+- 🧭 Role-specific dashboards
+- 📅 Booking system for multiple service types
+- 🔄 Booking request lifecycle: pending, confirmed, completed, cancelled
+- 🎟️ Promo code validation and discount support
+- 🪪 License and NID upload with verification workflow
+- 🖼️ Multi-image upload support for listings
+- 📍 Map-based pickup and destination selection for vehicles
+- 📱 Responsive web UI for desktop and mobile
 
-## Tech Stack
+## 🧱 Tech Stack
 
-### Frontend
+### 🎨 Frontend
 - Next.js
 - React
 - TypeScript
 - Tailwind CSS
 
-### Backend
+### ⚙️ Backend
 - Node.js
 - Express.js
 - MySQL
 - JWT authentication
 - Multer for file uploads
 
-## Project Structure
+## 🗂️ Project Structure
 
 - [backend](backend): REST API, business logic, database access, upload handling
 - [frontend](frontend): Next.js application, pages, components, role dashboards
 - [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md): Detailed workflow and system behavior
 - [START_PROJECT.md](START_PROJECT.md): Quick startup guide
 
-## How It Works (High-Level)
+## 🔄 How It Works (High-Level)
 
 1. A user registers with a selected role.
 2. Business roles can create or manage service listings.
@@ -84,7 +84,7 @@ The platform connects both sides with role-based accounts, booking workflows, an
 5. Provider accepts or rejects with feedback.
 6. Booking status updates for both sides.
 
-## Booking Types Supported
+## 🧾 Booking Types Supported
 
 - Vehicle booking
 - Hotel booking
@@ -92,17 +92,17 @@ The platform connects both sides with role-based accounts, booking workflows, an
 - Tour guide booking
 
 Vehicle booking supports:
-- With driver
-- Without driver (subject to approved driving license)
+- ✅ With driver
+- ✅ Without driver (subject to approved driving license)
 
-## Local Development Setup
+## 🛠️ Local Development Setup
 
-## Prerequisites
+## 📋 Prerequisites
 - Node.js installed
 - MySQL running (configured for port 3307 in this project)
 - Database created: car_rental_booking
 
-## 1. Start Backend
+## 1. 🚀 Start Backend
 
 ```bash
 cd backend
@@ -113,7 +113,7 @@ npm start
 Expected backend URL:
 - http://localhost:5001
 
-## 2. Start Frontend
+## 2. 🌐 Start Frontend
 
 ```bash
 cd frontend
@@ -124,11 +124,11 @@ npm run dev
 Expected frontend URL:
 - http://localhost:3000
 
-## 3. Open App
+## 3. 🔓 Open App
 
 - http://localhost:3000
 
-## Current Product Positioning
+## 📈 Current Product Positioning
 
 TravelRen is positioned as a practical travel-commerce platform for:
 - Customers planning tours with complete service options
@@ -140,7 +140,7 @@ It is suitable as an MVP and can be extended for production with:
 - Notification system
 - Advanced analytics and reporting
 
-## Documentation
+## 📚 Documentation
 
 For deeper details, check:
 - [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md)
