@@ -273,10 +273,27 @@ export default function DashboardPage() {
     }
   }
 
-  const handleDeleteBooking = (id: number) => {
-    // Simply hide the cancelled booking from view (doesn't delete from database)
-    setBookings(bookings.filter(b => b.id !== id))
-    showToast('Booking removed from view', 'success')
+  const handleDeleteBooking = async (id: number) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5001/api/bookings/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        setBookings(bookings.filter(b => b.id !== id))
+        showToast('Booking removed successfully', 'success')
+      } else {
+        const data = await response.json().catch(() => ({}))
+        showToast(data.message || 'Failed to remove booking', 'error')
+      }
+    } catch (error) {
+      console.error('Failed to delete booking:', error)
+      showToast('Failed to remove booking', 'error')
+    }
   }
 
   // Show loading state while checking authentication

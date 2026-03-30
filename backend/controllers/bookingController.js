@@ -706,7 +706,7 @@ const getAllBookings = async (req, res) => {
 const deleteBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const userRole = req.user.role;
 
     // Check if booking exists and get booking details
