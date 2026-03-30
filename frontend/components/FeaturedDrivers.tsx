@@ -16,7 +16,7 @@ function DriverCard({ driver, index }: { driver: any; index: number }) {
         initial={{ opacity: 0, x: -30 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.5, delay: index * 0.15, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.5, delay: index * 0.15, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
         whileHover={{ 
           scale: 1.02,
           boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.2)"
@@ -47,7 +47,7 @@ function DriverCard({ driver, index }: { driver: any; index: number }) {
                 className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold z-10"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 500, damping: 20, delay: 0.3 + index * 0.1 }}
+                transition={{ type: "spring" as const, stiffness: 500, damping: 20, delay: 0.3 + index * 0.1 }}
               >
                 Available
               </motion.div>

@@ -20,7 +20,7 @@ const columnVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] }
+    transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }
   }
 }
 
@@ -31,7 +31,7 @@ const linkVariants = {
 
 const socialVariants = {
   rest: { scale: 1, rotate: 0 },
-  hover: { scale: 1.15, rotate: 5, transition: { type: "spring", stiffness: 400 } }
+  hover: { scale: 1.15, rotate: 5, transition: { type: "spring" as const, stiffness: 400 } }
 }
 
 export function Footer() {
@@ -165,7 +165,7 @@ export function Footer() {
                 >
                   <motion.div
                     whileHover={{ scale: 1.2, rotate: 10 }}
-                    transition={{ type: "spring", stiffness: 400 }}
+                    transition={{ type: "spring" as const, stiffness: 400 }}
                   >
                     <item.icon className={`w-5 h-5 text-primary-400 flex-shrink-0 ${item.isAddress ? 'mt-0.5' : ''}`} />
                   </motion.div>

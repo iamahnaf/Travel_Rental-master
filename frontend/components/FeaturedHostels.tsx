@@ -18,7 +18,7 @@ function HotelCard({ hotel, index }: { hotel: any; index: number }) {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.5, delay: index * 0.1, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.5, delay: index * 0.1, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
         whileHover={{ 
           y: -8, 
           scale: 1.02,
@@ -46,7 +46,7 @@ function HotelCard({ hotel, index }: { hotel: any; index: number }) {
                   rest: { scale: 1 },
                   hover: { scale: 1.08 }
                 }}
-                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
               />
             </motion.div>
           ) : (
@@ -59,7 +59,7 @@ function HotelCard({ hotel, index }: { hotel: any; index: number }) {
               className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold z-10"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500, damping: 20, delay: 0.3 + index * 0.1 }}
+              transition={{ type: "spring" as const, stiffness: 500, damping: 20, delay: 0.3 + index * 0.1 }}
             >
               {hotel.available_rooms} Rooms Available
             </motion.div>

@@ -28,7 +28,7 @@ function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.4, delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.4, delay: index * 0.05, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
         whileHover={{ y: -8, transition: { duration: 0.2 } }}
         className="h-full"
       >
@@ -65,7 +65,7 @@ function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
                 className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold z-10"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 500, damping: 20, delay: 0.2 + index * 0.05 }}
+                transition={{ type: "spring" as const, stiffness: 500, damping: 20, delay: 0.2 + index * 0.05 }}
               >
                 Available
               </motion.div>

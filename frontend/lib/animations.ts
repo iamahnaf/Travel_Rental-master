@@ -256,7 +256,7 @@ export const counterVariants: Variants = {
     opacity: 1, 
     scale: 1,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 100,
       damping: 15
     }
@@ -271,7 +271,7 @@ export const pulse: Variants = {
     transition: {
       duration: 2,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 }
@@ -338,7 +338,7 @@ export const float: Variants = {
     transition: {
       duration: 6,
       repeat: Infinity,
-      ease: "easeInOut"
+      ease: "easeInOut" as const
     }
   }
 }
@@ -351,7 +351,7 @@ export const shimmer: Variants = {
     transition: {
       duration: 1.5,
       repeat: Infinity,
-      ease: "linear"
+      ease: "linear" as const
     }
   }
 }
@@ -409,7 +409,7 @@ export const toast: Variants = {
     y: 0, 
     scale: 1,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 400,
       damping: 25
     }
@@ -429,7 +429,7 @@ export const badgePop: Variants = {
     scale: 1, 
     opacity: 1,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 500,
       damping: 20
     }

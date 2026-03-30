@@ -165,19 +165,19 @@ export default function RegisterPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, type: "spring" }}
+          transition={{ duration: 0.5, type: "spring" as const }}
         >
           <Card className="max-w-md w-full text-center">
             <motion.div 
               className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring", stiffness: 500 }}
+              transition={{ delay: 0.2, type: "spring" as const, stiffness: 500 }}
             >
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
+                transition={{ delay: 0.4, type: "spring" as const, stiffness: 300 }}
               >
                 <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
               </motion.div>
@@ -246,7 +246,7 @@ export default function RegisterPage() {
               <motion.div 
                 className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6"
                 whileHover={{ scale: 1.15, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 400 }}
+                transition={{ type: "spring" as const, stiffness: 400 }}
               >
                 <UserCircle className="w-10 h-10 text-primary-600 dark:text-primary-400" />
               </motion.div>
@@ -269,7 +269,7 @@ export default function RegisterPage() {
               <motion.div 
                 className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6"
                 whileHover={{ scale: 1.15, rotate: -5 }}
-                transition={{ type: "spring", stiffness: 400 }}
+                transition={{ type: "spring" as const, stiffness: 400 }}
               >
                 <Briefcase className="w-10 h-10 text-blue-600 dark:text-blue-400" />
               </motion.div>

@@ -582,7 +582,7 @@ export default function AdminDashboard() {
                         {new Date(u.created_at).toLocaleDateString()}
                       </td>
                       <td className="p-4">
-                        {u.id !== user?.id && (
+                        {u.id !== Number(user?.id) && (
                           deleteConfirm?.type === 'user' && deleteConfirm?.id === u.id ? (
                             <div className="flex gap-2">
                               <Button

@@ -47,7 +47,7 @@ export function MotionButton({
       onClick={onClick}
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.95 }}
-      transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
     >
       {isLoading ? (
         <>
@@ -58,7 +58,7 @@ export function MotionButton({
             viewBox="0 0 24 24"
             initial={{ rotate: 0 }}
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" as const }}
           >
             <circle
               className="opacity-25"

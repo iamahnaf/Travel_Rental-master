@@ -19,7 +19,7 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
         initial={{ opacity: 0, x: 30 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -30 }}
-        transition={{ duration: 0.4, delay: index * 0.08, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.4, delay: index * 0.08, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
         whileHover={{ x: -8 }}
       >
         <motion.div
@@ -51,7 +51,7 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
                   className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold z-10"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 20, delay: 0.2 + index * 0.05 }}
+                  transition={{ type: "spring" as const, stiffness: 500, damping: 20, delay: 0.2 + index * 0.05 }}
                 >
                   Available
                 </motion.div>
@@ -73,7 +73,7 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
                     key={i}
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2 + i * 0.05, type: "spring", stiffness: 500 }}
+                    transition={{ delay: 0.2 + i * 0.05, type: "spring" as const, stiffness: 500 }}
                   >
                     <Star
                       className={`w-4 h-4 ${

@@ -23,7 +23,7 @@ export function MotionCard({ children, className = '', hover = false, delay = 0 
       transition: { 
         duration: 0.5, 
         delay,
-        ease: [0.4, 0, 0.2, 1]
+        ease: [0.4, 0, 0.2, 1] as [number, number, number, number]
       }
     }
   }
@@ -42,7 +42,7 @@ export function MotionCard({ children, className = '', hover = false, delay = 0 
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
         }}
         whileTap={{ scale: 0.98 }}
-        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
       >
         {children}
       </motion.div>

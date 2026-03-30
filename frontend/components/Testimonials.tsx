@@ -47,7 +47,7 @@ export function Testimonials() {
       scale: 1,
       transition: {
         duration: 0.6,
-        ease: [0.4, 0, 0.2, 1]
+        ease: [0.4, 0, 0.2, 1] as [number, number, number, number]
       }
     }
   }
@@ -59,7 +59,7 @@ export function Testimonials() {
       scale: 1,
       transition: {
         delay: i * 0.1,
-        type: "spring",
+        type: "spring" as const,
         stiffness: 500,
         damping: 15
       }
@@ -84,7 +84,7 @@ export function Testimonials() {
             transition={{ 
               duration: 5, 
               repeat: Infinity,
-              ease: "linear"
+              ease: "linear" as const
             }}
             style={{ backgroundSize: "200% 200%" }}
           >
@@ -129,7 +129,7 @@ export function Testimonials() {
                   <motion.div 
                     className="relative w-16 h-16 rounded-full overflow-hidden ring-4 ring-white/50 dark:ring-gray-700/50"
                     whileHover={{ scale: 1.1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    transition={{ type: "spring" as const, stiffness: 300 }}
                   >
                     <img
                       src={testimonial.image}

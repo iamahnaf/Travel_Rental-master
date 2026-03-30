@@ -129,7 +129,7 @@ export default function LoginPage() {
               <motion.div 
                 className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6"
                 whileHover={{ scale: 1.15, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 400 }}
+                transition={{ type: "spring" as const, stiffness: 400 }}
               >
                 <User className="w-10 h-10 text-primary-600 dark:text-primary-400" />
               </motion.div>
@@ -149,7 +149,7 @@ export default function LoginPage() {
               <motion.div 
                 className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6"
                 whileHover={{ scale: 1.15, rotate: -5 }}
-                transition={{ type: "spring", stiffness: 400 }}
+                transition={{ type: "spring" as const, stiffness: 400 }}
               >
                 <Briefcase className="w-10 h-10 text-blue-600 dark:text-blue-400" />
               </motion.div>
@@ -226,7 +226,7 @@ export default function LoginPage() {
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500 }}
+                      transition={{ type: "spring" as const, stiffness: 500 }}
                     >
                       <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                     </motion.div>
@@ -294,7 +294,7 @@ export default function LoginPage() {
                         <motion.div
                           className="w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" as const }}
                         />
                         Signing in...
                       </motion.span>

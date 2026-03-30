@@ -50,12 +50,12 @@ export function Navbar() {
     hidden: { 
       opacity: 0,
       height: 0,
-      transition: { duration: 0.2, ease: "easeInOut" }
+      transition: { duration: 0.2, ease: "easeInOut" as const }
     },
     visible: { 
       opacity: 1,
       height: "auto",
-      transition: { duration: 0.3, ease: "easeOut" }
+      transition: { duration: 0.3, ease: "easeOut" as const }
     }
   }
 
@@ -77,7 +77,7 @@ export function Navbar() {
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
@@ -113,7 +113,7 @@ export function Navbar() {
                     <motion.div
                       className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400"
                       layoutId="navbar-indicator"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
                     />
                   )}
                 </Link>

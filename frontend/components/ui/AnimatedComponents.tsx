@@ -26,7 +26,7 @@ export function AnimatedSection({ children, className = '', delay = 0 }: Animate
           transition: { 
             duration: 0.6, 
             delay,
-            ease: [0.4, 0, 0.2, 1]
+            ease: [0.4, 0, 0.2, 1] as [number, number, number, number]
           }
         }
       }}
@@ -128,7 +128,7 @@ export function AnimatedCounter({
       className={className}
       initial={{ opacity: 0, scale: 0.5 }}
       animate={isInView ? { opacity: 1, scale: 1 } : {}}
-      transition={{ type: "spring", stiffness: 100, damping: 15 }}
+      transition={{ type: "spring" as const, stiffness: 100, damping: 15 }}
     >
       {prefix}{count}{suffix}
     </motion.span>
@@ -141,7 +141,7 @@ export function SuccessAnimation({ size = 64 }: { size?: number }) {
     <motion.div
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
-      transition={{ type: "spring", stiffness: 200, damping: 15 }}
+      transition={{ type: "spring" as const, stiffness: 200, damping: 15 }}
     >
       <motion.svg
         width={size}
@@ -159,7 +159,7 @@ export function SuccessAnimation({ size = 64 }: { size?: number }) {
           fill="none"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.5, ease: "easeOut" as const }}
         />
         <motion.path
           d="M8 12l2.5 2.5L16 9"
@@ -170,7 +170,7 @@ export function SuccessAnimation({ size = 64 }: { size?: number }) {
           fill="none"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
-          transition={{ duration: 0.3, delay: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.3, delay: 0.5, ease: "easeOut" as const }}
         />
       </motion.svg>
     </motion.div>
@@ -186,7 +186,7 @@ export function LoadingSpinner({ size = 24, className = '' }: { size?: number; c
       viewBox="0 0 24 24"
       className={className}
       animate={{ rotate: 360 }}
-      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      transition={{ duration: 1, repeat: Infinity, ease: "linear" as const }}
     >
       <circle
         cx="12"
@@ -216,7 +216,7 @@ export function ShimmerSkeleton({ className = '' }: { className?: string }) {
         className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
         initial={{ x: "-100%" }}
         animate={{ x: "100%" }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" as const }}
       />
     </div>
   )

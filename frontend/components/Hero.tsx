@@ -104,7 +104,7 @@ export function Hero() {
       filter: "blur(0px)",
       transition: {
         duration: 0.8,
-        ease: [0.4, 0, 0.2, 1]
+        ease: [0.4, 0, 0.2, 1] as [number, number, number, number]
       }
     }
   }
@@ -118,7 +118,7 @@ export function Hero() {
       transition: {
         duration: 0.8,
         delay: 0.6,
-        ease: [0.4, 0, 0.2, 1]
+        ease: [0.4, 0, 0.2, 1] as [number, number, number, number]
       }
     }
   }
@@ -141,7 +141,7 @@ export function Hero() {
       y: 0,
       scale: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 100,
         damping: 15
       }
@@ -155,7 +155,7 @@ export function Hero() {
         className="absolute inset-0"
         initial={{ scale: 1.1 }}
         animate={{ scale: 1 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
+        transition={{ duration: 1.5, ease: "easeOut" as const }}
       >
         <Image
           src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1920&h=1080&fit=crop&auto=format"
@@ -197,7 +197,7 @@ export function Hero() {
               transition={{ 
                 duration: 5, 
                 repeat: Infinity,
-                ease: "linear"
+                ease: "linear" as const
               }}
               style={{ backgroundSize: "200% 200%" }}
             >
@@ -385,7 +385,7 @@ export function Hero() {
         transition={{ 
           duration: 6, 
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "easeInOut" as const
         }}
       />
       <motion.div
@@ -397,7 +397,7 @@ export function Hero() {
         transition={{ 
           duration: 8, 
           repeat: Infinity,
-          ease: "easeInOut"
+          ease: "easeInOut" as const
         }}
       />
     </div>
