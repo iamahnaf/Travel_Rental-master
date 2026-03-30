@@ -16,11 +16,31 @@ It is designed as a B2B + B2C business model:
 
 ## 💡 Business Concept
 
-TravelRen solves two problems in one ecosystem:
-- Travelers need a trusted, all-in-one booking platform for transport, lodging, and guided trips.
-- Service providers need a digital channel to attract customers, manage availability, and handle requests.
+In Bangladesh, travelers usually need to use separate services for each part of a trip. They may book a car from one place, find a hotel from another place, and then arrange a driver or tour guide manually.
 
-The platform connects both sides with role-based accounts, booking workflows, and real-time request management.
+There is still no widely adopted local web platform that combines:
+- Car rental with driver
+- Car rental without driver
+- Hotel booking
+- Driver and tour guide booking
+in one complete tour workflow.
+
+TravelRen was built to solve this exact problem.
+
+TravelRen solves two big needs in one ecosystem:
+- Travelers get one platform to plan and book their full tour arrangement from start to finish.
+- Service providers get one digital marketplace to list services, receive bookings, and grow their business.
+
+This is why TravelRen is designed as a practical B2B + B2C platform for Bangladesh: it connects customers and travel businesses through one unified booking system.
+
+## 🇧🇩 Why This Matters In Bangladesh
+
+- Most travel arrangements are still fragmented and manual
+- Self-drive car rental options are limited and hard to trust
+- Small and medium travel businesses often have no unified digital sales channel
+- Travelers need convenience, transparency, and faster decision-making
+
+TravelRen addresses these gaps by giving users an all-in-one booking experience and giving providers a structured online business model.
 
 ## 👥 Target Users
 
@@ -110,8 +130,6 @@ npm install
 npm start
 ```
 
-Expected backend URL:
-- http://localhost:5001
 
 ## 2. 🌐 Start Frontend
 
@@ -120,13 +138,6 @@ cd frontend
 npm install --legacy-peer-deps
 npm run dev
 ```
-
-Expected frontend URL:
-- http://localhost:3000
-
-## 3. 🔓 Open App
-
-- http://localhost:3000
 
 ## 📈 Current Product Positioning
 
@@ -140,10 +151,3 @@ It is suitable as an MVP and can be extended for production with:
 - Notification system
 - Advanced analytics and reporting
 
-## 📚 Documentation
-
-For deeper details, check:
-- [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md)
-- [STATUS.txt](STATUS.txt)
-- [backend/README.md](backend/README.md)
-- [frontend/README.md](frontend/README.md)
