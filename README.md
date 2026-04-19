@@ -1,4 +1,4 @@
-# TravelRen: B2B + B2C Tour, Transport, and Stay Marketplace 🌍
+# TravelRen: B2B + B2C Tour Planning Platform
 
 TravelRen is a full-stack marketplace platform for travel services.
 It helps travelers book complete trip services and helps business owners grow by listing and managing their services.
