@@ -3,7 +3,7 @@
 TravelRen is a full-stack marketplace platform for travel services.
 It helps travelers book complete trip services and helps business owners grow by listing and managing their services.
 
-Vist the site - https://travel-ren.vercel.app/
+Vist the site - https://travelren.vercel.app/
 
 This platform supports:
 - 🚗 Car rental with driver
