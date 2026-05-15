@@ -2,6 +2,7 @@
 
 import { Driver } from '@/types'
 import { X, Star, Check } from 'lucide-react'
+import Image from 'next/image'
 import { Button } from './ui/Button'
 import { Card } from './ui/Card'
 
@@ -73,10 +74,17 @@ export function DriverSelection({
                 }`}
               >
                 <div className="flex items-start space-x-4">
-                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xl font-semibold text-gray-600 dark:text-gray-400">
-                      {driver.name.charAt(0)}
-                    </span>
+                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+                    {(() => {
+                      const photo = driver.photo_url || driver.photo;
+                      return photo ? (
+                        <Image src={photo} alt={driver.name} fill className="object-cover" />
+                      ) : (
+                        <span className="text-xl font-semibold text-gray-600 dark:text-gray-400">
+                          {driver.name.charAt(0)}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
@@ -99,11 +107,11 @@ export function DriverSelection({
                         />
                       ))}
                       <span className="text-sm text-gray-600 dark:text-gray-400 ml-1">
-                        {driver.rating} ({driver.total_rides || 0} rides)
+                        {driver.rating} ({driver.total_rides || driver.totalRides || 0} rides)
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {driver.experience_years || 0} years experience
+                      {driver.experience_years || driver.experience || 0} years experience
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {(() => {

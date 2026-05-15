@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Hotel } from '@/types'
 import { MapPin, Star, Bed } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { mockHotels } from '@/lib/mockData'
 import { ShimmerSkeleton } from './ui/AnimatedComponents'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -115,10 +116,17 @@ export function FeaturedHostels() {
         const response = await fetch(`${API_BASE}/api/hotels`)
         if (response.ok) {
           const data = await response.json()
-          setFeaturedHotels(data.data.slice(0, 3))
+          if (data.data && data.data.length > 0) {
+            setFeaturedHotels(data.data.slice(0, 3))
+            setLoading(false)
+            return
+          }
         }
+        // Fallback
+        setFeaturedHotels(mockHotels.slice(0, 3))
       } catch (error) {
         console.error('Error fetching featured hotels:', error)
+        setFeaturedHotels(mockHotels.slice(0, 3))
       } finally {
         setLoading(false)
       }

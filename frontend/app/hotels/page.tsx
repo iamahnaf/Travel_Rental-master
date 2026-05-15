@@ -15,7 +15,20 @@ import { HostelCardSkeleton } from '@/components/ui/LoadingSkeleton'
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
 function HotelCard({ hotel }: { hotel: any }) {
-  const images = Array.isArray(hotel.image_urls) ? hotel.image_urls : (typeof hotel.image_urls === 'string' ? JSON.parse(hotel.image_urls) : [])
+  // Handle images logic for both DB (image_urls) and Mock (images)
+  let images = []
+  if (Array.isArray(hotel.image_urls)) {
+    images = hotel.image_urls
+  } else if (typeof hotel.image_urls === 'string') {
+    try { images = JSON.parse(hotel.image_urls) } catch { images = [] }
+  } else if (Array.isArray(hotel.images)) {
+    images = hotel.images
+  }
+  
+  // Fallback for single image property
+  if (images.length === 0 && (hotel.image_url || hotel.image)) {
+    images = [hotel.image_url || hotel.image]
+  }
   
   return (
     <Link href={`/hotels/${hotel.id}`}>
@@ -67,7 +80,7 @@ function HotelCard({ hotel }: { hotel: any }) {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Starting from</p>
               <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                ৳{parseFloat(hotel.price_per_night || hotel.pricePerNight).toLocaleString()}
+                ৳{parseFloat(hotel.price_per_night || hotel.pricePerNight || 0).toLocaleString()}
                 <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/night</span>
               </p>
             </div>
@@ -98,10 +111,17 @@ export default function HotelsPage() {
         const response = await fetch(`${API_BASE}/api/hotels`)
         if (response.ok) {
           const data = await response.json()
-          setHotels(data.data)
+          if (data.data && data.data.length > 0) {
+            setHotels(data.data)
+            return
+          }
         }
+        // Fallback to mock data if API fails or is empty (Demo Mode)
+        console.log('Using mock hotels (Demo Mode)')
+        setHotels(mockHotels)
       } catch (error) {
-        console.error('Error fetching hotels:', error)
+        console.error('Error fetching hotels, falling back to mock data:', error)
+        setHotels(mockHotels)
       } finally {
         setLoading(false)
       }

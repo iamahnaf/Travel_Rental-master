@@ -35,19 +35,22 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
-              {guide.photo_url ? (
-                <Image
-                  src={guide.photo_url}
-                  alt={guide.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 128px"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                  <User className="w-16 h-16" />
-                </div>
-              )}
+              {(() => {
+                const photo = guide.photo_url || guide.photo;
+                return photo ? (
+                  <Image
+                    src={photo}
+                    alt={guide.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 128px"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                    <User className="w-16 h-16" />
+                  </div>
+                );
+              })()}
               {guide.available && (
                 <motion.div 
                   className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold z-10"
@@ -151,10 +154,16 @@ export default function TourGuidesPage() {
         const response = await fetch(`${API_BASE}/api/tour-guides`)
         if (response.ok) {
           const data = await response.json()
-          setGuides(data.data)
+          if (data.data && data.data.length > 0) {
+            setGuides(data.data)
+            return
+          }
         }
+        // Fallback (Demo Mode)
+        setGuides(mockTourGuides)
       } catch (error) {
-        console.error('Error fetching tour guides:', error)
+        console.error('Error fetching tour guides, falling back to mock data:', error)
+        setGuides(mockTourGuides)
       } finally {
         setLoading(false)
       }

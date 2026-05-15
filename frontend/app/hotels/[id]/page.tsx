@@ -86,9 +86,35 @@ export default function HotelDetailsPage() {
           console.log('Hotel data received:', data.data)
           console.log('Image URLs:', data.data.image_urls)
           setHotel(data.data)
+          setLoading(false)
+          return
+        }
+        
+        // Fallback to mock data for demo mode
+        const mockHotel = mockHotels.find(h => h.id === hotelId)
+        if (mockHotel) {
+          console.log('Using mock hotel data (Demo Mode)')
+          // Adapt mock data format to what the component expects from API
+          setHotel({
+            ...mockHotel,
+            price_per_night: mockHotel.pricePerNight,
+            image_urls: mockHotel.images,
+            available_rooms: mockHotel.availableRooms,
+            total_rooms: mockHotel.totalRooms
+          })
         }
       } catch (error) {
-        console.error('Error fetching hotel:', error)
+        console.error('Error fetching hotel, trying mock data:', error)
+        const mockHotel = mockHotels.find(h => h.id === hotelId)
+        if (mockHotel) {
+          setHotel({
+            ...mockHotel,
+            price_per_night: mockHotel.pricePerNight,
+            image_urls: mockHotel.images,
+            available_rooms: mockHotel.availableRooms,
+            total_rooms: mockHotel.totalRooms
+          })
+        }
       } finally {
         setLoading(false)
       }

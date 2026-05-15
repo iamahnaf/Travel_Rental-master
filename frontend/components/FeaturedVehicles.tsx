@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { mockVehicles } from '@/lib/mockData'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Vehicle } from '@/types'
@@ -31,22 +32,25 @@ function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
           whileHover="hover"
           initial="rest"
         >
-          {vehicle.image_url ? (
-            <motion.img
-              src={vehicle.image_url}
-              alt={`${vehicle.brand} ${vehicle.model}`}
-              className="w-full h-full object-cover"
-              variants={{
-                rest: { scale: 1 },
-                hover: { scale: 1.08 }
-              }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-              <Car className="w-16 h-16" />
-            </div>
-          )}
+          {(() => {
+            const photo = vehicle.image_url || vehicle.image;
+            return photo ? (
+              <motion.img
+                src={photo}
+                alt={`${vehicle.brand} ${vehicle.model}`}
+                className="w-full h-full object-cover"
+                variants={{
+                  rest: { scale: 1 },
+                  hover: { scale: 1.08 }
+                }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                <Car className="w-16 h-16" />
+              </div>
+            );
+          })()}
           {vehicle.available && (
             <motion.div 
               className="absolute top-3 right-3 bg-success-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-10"
@@ -76,7 +80,7 @@ function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
           <div className="flex flex-wrap gap-4 text-sm text-text-muted dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <Fuel className="w-4 h-4" />
-              <span>{vehicle.fuel_type}</span>
+              <span>{vehicle.fuel_type || vehicle.fuelType}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Users className="w-4 h-4" />
@@ -91,7 +95,7 @@ function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
             <div>
               <p className="text-sm text-text-muted dark:text-gray-400">Starting from</p>
               <div className="price-badge mt-1">
-                ৳{Number(vehicle.price_per_day).toLocaleString()}
+                ৳{Number(vehicle.price_per_day || vehicle.pricePerDay || 0).toLocaleString()}
                 <span className="text-xs font-normal opacity-70">/day</span>
               </div>
             </div>
@@ -107,15 +111,26 @@ export function FeaturedVehicles() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/vehicles`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setVehicles(data.data.slice(0, 3))
+    const fetchVehicles = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/api/vehicles`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.data.length > 0) {
+            setVehicles(data.data.slice(0, 3))
+            setLoading(false)
+            return
+          }
         }
-      })
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false))
+        setVehicles(mockVehicles.slice(0, 3))
+      } catch (error) {
+        console.error('Error fetching featured vehicles:', error)
+        setVehicles(mockVehicles.slice(0, 3))
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchVehicles()
   }, [])
 
   if (loading) return (

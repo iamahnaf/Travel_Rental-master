@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { mockDrivers } from '@/lib/mockData'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Driver } from '@/types'
@@ -31,19 +32,22 @@ function DriverCard({ driver, index }: { driver: any; index: number }) {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
-            {driver.photo_url ? (
-              <Image
-                src={driver.photo_url}
-                alt={driver.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 128px"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                <Car className="w-16 h-16" />
-              </div>
-            )}
+            {(() => {
+              const photo = driver.photo_url || driver.photo;
+              return photo ? (
+                <Image
+                  src={photo}
+                  alt={driver.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 128px"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                  <Car className="w-16 h-16" />
+                </div>
+              );
+            })()}
             {driver.available && (
               <motion.div 
                 className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold z-10"
@@ -100,7 +104,7 @@ function DriverCard({ driver, index }: { driver: any; index: number }) {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Starting from</p>
                 <p className="text-xl font-bold text-primary-600 dark:text-primary-400">
-                  ৳{parseFloat(driver.price_per_day || 1500).toLocaleString()}
+                  ৳{parseFloat(driver.price_per_day || driver.pricePerDay || 1500).toLocaleString()}
                   <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/day</span>
                 </p>
               </div>
@@ -122,10 +126,16 @@ export function FeaturedDrivers() {
         const response = await fetch(`${API_BASE}/api/drivers`)
         if (response.ok) {
           const data = await response.json()
-          setFeaturedDrivers(data.data.slice(0, 3))
+          if (data.data && data.data.length > 0) {
+            setFeaturedDrivers(data.data.slice(0, 3))
+            setLoading(false)
+            return
+          }
         }
+        setFeaturedDrivers(mockDrivers.slice(0, 3))
       } catch (error) {
         console.error('Error fetching featured drivers:', error)
+        setFeaturedDrivers(mockDrivers.slice(0, 3))
       } finally {
         setLoading(false)
       }

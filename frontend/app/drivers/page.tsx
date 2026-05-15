@@ -35,19 +35,22 @@ function DriverCard({ driver, index }: { driver: any; index: number }) {
               whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.3 }}
             >
-              {driver.photo_url ? (
-                <Image
-                  src={driver.photo_url}
-                  alt={driver.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 128px"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                  <Car className="w-16 h-16" />
-                </div>
-              )}
+              {(() => {
+                const photo = driver.photo_url || driver.photo;
+                return photo ? (
+                  <Image
+                    src={photo}
+                    alt={driver.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 128px"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                    <Car className="w-16 h-16" />
+                  </div>
+                );
+              })()}
               {driver.available && (
                 <motion.div 
                   className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold z-10"
@@ -141,10 +144,16 @@ export default function DriversPage() {
         const response = await fetch(`${API_BASE}/api/drivers`)
         if (response.ok) {
           const data = await response.json()
-          setDrivers(data.data)
+          if (data.data && data.data.length > 0) {
+            setDrivers(data.data)
+            return
+          }
         }
+        // Fallback (Demo Mode)
+        setDrivers(mockDrivers)
       } catch (error) {
-        console.error('Error fetching drivers:', error)
+        console.error('Error fetching drivers, falling back to mock data:', error)
+        setDrivers(mockDrivers)
       } finally {
         setLoading(false)
       }

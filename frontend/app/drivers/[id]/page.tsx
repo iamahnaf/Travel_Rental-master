@@ -36,9 +36,32 @@ export default function DriverDetailsPage() {
         if (response.ok) {
           const data = await response.json()
           setDriver(data.data)
+          return
+        }
+
+        // Fallback
+        const mockDriver = mockDrivers.find(d => d.id === driverId)
+        if (mockDriver) {
+          setDriver({
+            ...mockDriver,
+            price_per_day: mockDriver.pricePerDay,
+            photo_url: mockDriver.photo,
+            experience_years: mockDriver.experience,
+            total_rides: mockDriver.totalRides
+          })
         }
       } catch (error) {
-        console.error('Error fetching driver:', error)
+        console.error('Error fetching driver, trying mock:', error)
+        const mockDriver = mockDrivers.find(d => d.id === driverId)
+        if (mockDriver) {
+          setDriver({
+            ...mockDriver,
+            price_per_day: mockDriver.pricePerDay,
+            photo_url: mockDriver.photo,
+            experience_years: mockDriver.experience,
+            total_rides: mockDriver.totalRides
+          })
+        }
       } finally {
         setLoading(false)
       }

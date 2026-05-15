@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { mockDrivers } from '@/lib/mockData'
+import { mockVehicles, mockDrivers } from '@/lib/mockData'
 import { Vehicle, Driver } from '@/types'
 import { PromoCode, calculateDiscount } from '@/lib/promoCodes'
 import { Car, Users, Fuel, Calendar, ChevronLeft, ChevronRight, Check } from 'lucide-react'
@@ -69,12 +69,38 @@ export default function VehicleDetailsPage() {
         if (response.ok) {
           const data = await response.json()
           setVehicle(data.data)
-        } else {
-          setVehicle(null)
+          return
+        }
+
+        // Fallback to mock data for demo mode
+        const mockVehicle = mockVehicles.find(v => v.id === vehicleId)
+        if (mockVehicle) {
+          console.log('Using mock vehicle data (Demo Mode)')
+          // Adapt mock data format
+          setVehicle({
+            ...mockVehicle,
+            price_per_day: mockVehicle.pricePerDay,
+            with_driver_price: mockVehicle.withDriverPrice,
+            fuel_type: mockVehicle.fuelType,
+            default_fuel_included: mockVehicle.defaultFuelIncluded,
+            image_url: mockVehicle.image,
+            images: JSON.stringify(mockVehicle.images || [mockVehicle.image])
+          })
         }
       } catch (error) {
-        console.error('Error fetching vehicle:', error)
-        setVehicle(null)
+        console.error('Error fetching vehicle, trying mock data:', error)
+        const mockVehicle = mockVehicles.find(v => v.id === vehicleId)
+        if (mockVehicle) {
+          setVehicle({
+            ...mockVehicle,
+            price_per_day: mockVehicle.pricePerDay,
+            with_driver_price: mockVehicle.withDriverPrice,
+            fuel_type: mockVehicle.fuelType,
+            default_fuel_included: mockVehicle.defaultFuelIncluded,
+            image_url: mockVehicle.image,
+            images: JSON.stringify(mockVehicle.images || [mockVehicle.image])
+          })
+        }
       } finally {
         setLoading(false)
       }

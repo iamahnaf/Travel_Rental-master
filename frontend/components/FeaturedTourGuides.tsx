@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { mockTourGuides } from '@/lib/mockData'
 import Link from 'next/link'
 import Image from 'next/image'
 import { TourGuide } from '@/types'
@@ -31,19 +32,22 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
-            {guide.photo_url ? (
-              <Image
-                src={guide.photo_url}
-                alt={guide.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 128px"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                <User className="w-16 h-16" />
-              </div>
-            )}
+            {(() => {
+              const photo = guide.photo_url || guide.photo;
+              return photo ? (
+                <Image
+                  src={photo}
+                  alt={guide.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 128px"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                  <User className="w-16 h-16" />
+                </div>
+              );
+            })()}
             {guide.available && (
               <motion.div 
                 className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs font-semibold z-10"
@@ -111,7 +115,7 @@ function TourGuideCard({ guide, index }: { guide: any; index: number }) {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Starting from</p>
                 <p className="text-xl font-bold text-primary-600 dark:text-primary-400">
-                  ৳{parseFloat(guide.price_per_day || 2000).toLocaleString()}
+                  ৳{parseFloat(guide.price_per_day || guide.pricePerDay || 2000).toLocaleString()}
                   <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/day</span>
                 </p>
               </div>
@@ -133,10 +137,16 @@ export function FeaturedTourGuides() {
         const response = await fetch(`${API_BASE}/api/tour-guides`)
         if (response.ok) {
           const data = await response.json()
-          setFeaturedGuides(data.data.slice(0, 3))
+          if (data.data && data.data.length > 0) {
+            setFeaturedGuides(data.data.slice(0, 3))
+            setLoading(false)
+            return
+          }
         }
+        setFeaturedGuides(mockTourGuides.slice(0, 3))
       } catch (error) {
         console.error('Error fetching featured tour guides:', error)
+        setFeaturedGuides(mockTourGuides.slice(0, 3))
       } finally {
         setLoading(false)
       }

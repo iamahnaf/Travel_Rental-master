@@ -36,9 +36,32 @@ export default function TourGuideDetailsPage() {
         if (response.ok) {
           const data = await response.json()
           setGuide(data.data)
+          return
+        }
+
+        // Fallback
+        const mockGuide = mockTourGuides.find(g => g.id === guideId)
+        if (mockGuide) {
+          setGuide({
+            ...mockGuide,
+            price_per_day: mockGuide.pricePerDay,
+            photo_url: mockGuide.photo,
+            experience_years: mockGuide.experience,
+            total_tours: mockGuide.totalTours
+          })
         }
       } catch (error) {
-        console.error('Error fetching tour guide:', error)
+        console.error('Error fetching guide, trying mock:', error)
+        const mockGuide = mockTourGuides.find(g => g.id === guideId)
+        if (mockGuide) {
+          setGuide({
+            ...mockGuide,
+            price_per_day: mockGuide.pricePerDay,
+            photo_url: mockGuide.photo,
+            experience_years: mockGuide.experience,
+            total_tours: mockGuide.totalTours
+          })
+        }
       } finally {
         setLoading(false)
       }

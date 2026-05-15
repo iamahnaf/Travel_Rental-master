@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { mockVehicles } from '@/lib/mockData'
 import { Vehicle } from '@/types'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -83,7 +84,7 @@ function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
                 whileHover={{ scale: 1.05 }}
               >
                 <Fuel className="w-4 h-4" />
-                <span>{vehicle.fuel_type}</span>
+                <span>{vehicle.fuel_type || vehicle.fuelType}</span>
               </motion.div>
               <motion.div 
                 className="flex items-center space-x-1"
@@ -104,12 +105,12 @@ function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Starting from</p>
                 <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                  ৳{vehicle.price_per_day.toLocaleString()}
+                  ৳{(vehicle.price_per_day || vehicle.pricePerDay || 0).toLocaleString()}
                   <span className="text-sm font-normal text-gray-600 dark:text-gray-400">/day</span>
                 </p>
               </div>
               <div className="flex gap-2">
-                {vehicle.price_per_day !== vehicle.with_driver_price && (
+                {(vehicle.price_per_day || vehicle.pricePerDay) !== (vehicle.with_driver_price || vehicle.withDriverPrice) && (
                   <motion.span 
                     className="px-2 py-1 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded text-xs"
                     initial={{ opacity: 0, x: 10 }}
@@ -146,10 +147,17 @@ export default function VehiclesPage() {
         const response = await fetch(`${API_BASE}/api/vehicles`)
         if (response.ok) {
           const data = await response.json()
-          setVehicles(data.data)
+          if (data.data && data.data.length > 0) {
+            setVehicles(data.data)
+            return
+          }
         }
+        // Fallback to mock data (Demo Mode)
+        console.log('Using mock vehicles (Demo Mode)')
+        setVehicles(mockVehicles)
       } catch (error) {
-        console.error('Error fetching vehicles:', error)
+        console.error('Error fetching vehicles, falling back to mock data:', error)
+        setVehicles(mockVehicles)
       } finally {
         setLoading(false)
       }
