@@ -12,6 +12,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { VehicleCardSkeleton } from '@/components/ui/LoadingSkeleton'
 import { motion, AnimatePresence } from 'framer-motion'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
   // Handle images - could be JSON string, array, or null
   let imageUrl = vehicle.image_url
@@ -141,7 +143,7 @@ export default function VehiclesPage() {
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/vehicles')
+        const response = await fetch(`${API_BASE}/api/vehicles`)
         if (response.ok) {
           const data = await response.json()
           setVehicles(data.data)

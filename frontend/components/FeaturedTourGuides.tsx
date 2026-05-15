@@ -8,6 +8,8 @@ import { MapPin, Star, User } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { ShimmerSkeleton } from './ui/AnimatedComponents'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 function TourGuideCard({ guide, index }: { guide: any; index: number }) {
   return (
     <Link href={`/tour-guides/${guide.id}`}>
@@ -128,7 +130,7 @@ export function FeaturedTourGuides() {
   useEffect(() => {
     const fetchGuides = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/tour-guides')
+        const response = await fetch(`${API_BASE}/api/tour-guides`)
         if (response.ok) {
           const data = await response.json()
           setFeaturedGuides(data.data.slice(0, 3))

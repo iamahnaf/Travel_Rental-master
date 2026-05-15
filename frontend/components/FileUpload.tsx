@@ -4,6 +4,8 @@ import { useState, useRef } from 'react'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface FileUploadProps {
   label: string
   onUpload: (url: string) => void
@@ -76,7 +78,7 @@ export function FileUpload({
       formData.append(fieldName, file)
 
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5001${endpoint}`, {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

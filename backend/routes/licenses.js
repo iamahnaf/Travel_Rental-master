@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const router = express.Router();
 const { authenticateToken } = require('../utils/jwt');
 const { 
@@ -14,7 +15,11 @@ const {
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/licenses/');
+    const uploadPath = path.join(__dirname, '..', 'public', 'uploads', 'licenses');
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     // Generate unique filename
@@ -24,11 +29,12 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Accept only image files
-  if (file.mimetype.startsWith('image/')) {
+  const isImage = file.mimetype.startsWith('image/');
+  const isPdf = file.mimetype === 'application/pdf';
+  if (isImage || isPdf) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed!'), false);
+    cb(new Error('Only image or PDF files are allowed!'), false);
   }
 };
 

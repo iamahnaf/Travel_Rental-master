@@ -8,6 +8,8 @@ import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Calendar, MapPin, User, MessageSquare, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface BookingRequest {
   id: number
   traveler_name: string
@@ -40,7 +42,7 @@ export function IncomingRequests() {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5001/api/bookings/business/requests', {
+      const response = await fetch(`${API_BASE}/api/bookings/business/requests`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -59,7 +61,7 @@ export function IncomingRequests() {
   const handleAccept = async (id: number) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5001/api/bookings/${id}/accept`, {
+      const response = await fetch(`${API_BASE}/api/bookings/${id}/accept`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -82,7 +84,7 @@ export function IncomingRequests() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5001/api/bookings/${id}/reject`, {
+      const response = await fetch(`${API_BASE}/api/bookings/${id}/reject`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

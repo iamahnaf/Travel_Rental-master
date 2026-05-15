@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { HostelCardSkeleton } from '@/components/ui/LoadingSkeleton'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 function HotelCard({ hotel }: { hotel: any }) {
   const images = Array.isArray(hotel.image_urls) ? hotel.image_urls : (typeof hotel.image_urls === 'string' ? JSON.parse(hotel.image_urls) : [])
   
@@ -93,7 +95,7 @@ export default function HotelsPage() {
   useEffect(() => {
     const fetchHotels = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/hotels')
+        const response = await fetch(`${API_BASE}/api/hotels`)
         if (response.ok) {
           const data = await response.json()
           setHotels(data.data)

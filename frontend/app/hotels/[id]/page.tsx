@@ -15,6 +15,8 @@ import { Reviews } from '@/components/Reviews'
 import { PromoCodeInput } from '@/components/PromoCodeInput'
 import { NIDUpload } from '@/components/NIDUpload'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 export default function HotelDetailsPage() {
   const params = useParams()
   const router = useRouter()
@@ -78,7 +80,7 @@ export default function HotelDetailsPage() {
   useEffect(() => {
     const fetchHotel = async () => {
       try {
-        const response = await fetch(`http://localhost:5001/api/hotels/${hotelId}`)
+        const response = await fetch(`${API_BASE}/api/hotels/${hotelId}`)
         if (response.ok) {
           const data = await response.json()
           console.log('Hotel data received:', data.data)
@@ -138,7 +140,7 @@ export default function HotelDetailsPage() {
 
     // Check if user already has an approved NID
     try {
-      const nidResponse = await fetch('http://localhost:5001/api/nids/my-nid', {
+      const nidResponse = await fetch(`${API_BASE}/api/nids/my-nid`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       
@@ -177,7 +179,7 @@ export default function HotelDetailsPage() {
         promo_code_id: (appliedPromoCode as any)?.id || null
       }
 
-      const response = await fetch('http://localhost:5001/api/bookings', {
+      const response = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

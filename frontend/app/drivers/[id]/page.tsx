@@ -14,6 +14,8 @@ import { Card } from '@/components/ui/Card'
 import { Reviews } from '@/components/Reviews'
 import { PromoCodeInput } from '@/components/PromoCodeInput'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 export default function DriverDetailsPage() {
   const params = useParams()
   const router = useRouter()
@@ -30,7 +32,7 @@ export default function DriverDetailsPage() {
   useEffect(() => {
     const fetchDriver = async () => {
       try {
-        const response = await fetch(`http://localhost:5001/api/drivers/${driverId}`)
+        const response = await fetch(`${API_BASE}/api/drivers/${driverId}`)
         if (response.ok) {
           const data = await response.json()
           setDriver(data.data)
@@ -96,7 +98,7 @@ export default function DriverDetailsPage() {
         promo_code_id: (appliedPromoCode as any)?.id || null
       }
 
-      const response = await fetch('http://localhost:5001/api/bookings', {
+      const response = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface NIDUploadProps {
   onClose: () => void
   onComplete: (nidData: { number: string; file: File }) => void
@@ -81,7 +83,7 @@ export function NIDUpload({ onClose, onComplete }: NIDUploadProps) {
       formData.append('nid', file)
       formData.append('number', nidNumber)
 
-      const response = await fetch('http://localhost:5001/api/nids/upload', {
+      const response = await fetch(`${API_BASE}/api/nids/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

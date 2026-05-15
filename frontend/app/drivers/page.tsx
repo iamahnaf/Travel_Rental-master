@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { motion, AnimatePresence } from 'framer-motion'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 function DriverCard({ driver, index }: { driver: any; index: number }) {
   return (
     <Link href={`/drivers/${driver.id}`}>
@@ -136,7 +138,7 @@ export default function DriversPage() {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/drivers')
+        const response = await fetch(`${API_BASE}/api/drivers`)
         if (response.ok) {
           const data = await response.json()
           setDrivers(data.data)

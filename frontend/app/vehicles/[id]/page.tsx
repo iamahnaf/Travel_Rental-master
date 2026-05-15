@@ -16,6 +16,8 @@ import { PromoCodeInput } from '@/components/PromoCodeInput'
 import { MapPicker } from '@/components/MapPickerWrapper'
 import { motion, AnimatePresence } from 'framer-motion'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 export default function VehicleDetailsPage() {
   const params = useParams()
   const router = useRouter()
@@ -63,7 +65,7 @@ export default function VehicleDetailsPage() {
   useEffect(() => {
     const fetchVehicle = async () => {
       try {
-        const response = await fetch(`http://localhost:5001/api/vehicles/${vehicleId}`)
+        const response = await fetch(`${API_BASE}/api/vehicles/${vehicleId}`)
         if (response.ok) {
           const data = await response.json()
           setVehicle(data.data)
@@ -80,7 +82,7 @@ export default function VehicleDetailsPage() {
 
     const fetchDrivers = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/drivers')
+        const response = await fetch(`${API_BASE}/api/drivers`)
         if (response.ok) {
           const data = await response.json()
           setDrivers(data.data)
@@ -162,7 +164,7 @@ export default function VehicleDetailsPage() {
           return
         }
 
-        const response = await fetch('http://localhost:5001/api/licenses/check', {
+        const response = await fetch(`${API_BASE}/api/licenses/check`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -218,7 +220,7 @@ export default function VehicleDetailsPage() {
         promo_code_id: (appliedPromoCode as any)?.id || null
       }
 
-      const response = await fetch('http://localhost:5001/api/bookings', {
+      const response = await fetch(`${API_BASE}/api/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

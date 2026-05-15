@@ -160,6 +160,19 @@ const createVehicle = async (req, res) => {
       default_fuel_included 
     } = req.body;
 
+    const fuelTypeMap = {
+      petrol: 'Petrol',
+      diesel: 'Diesel',
+      electric: 'Electric',
+      hybrid: 'Hybrid'
+    };
+    const transmissionMap = {
+      automatic: 'Automatic',
+      manual: 'Manual'
+    };
+    const normalizedFuelType = fuelTypeMap[String(fuel_type || '').toLowerCase()] || fuel_type;
+    const normalizedTransmission = transmissionMap[String(transmission || '').toLowerCase()] || transmission;
+
     const query = `
       INSERT INTO vehicles (
         owner_id, brand, model, year, fuel_type, transmission, seats, 
@@ -169,7 +182,7 @@ const createVehicle = async (req, res) => {
     `;
     
     const [result] = await pool.execute(query, [
-      userId, brand, model, year, fuel_type, transmission, seats, 
+      userId, brand, model, year, normalizedFuelType, normalizedTransmission, seats, 
       price_per_day, with_driver_price, image_url, images || null, description, 
       default_fuel_included ? 1 : 0
     ]);
@@ -199,6 +212,19 @@ const updateVehicle = async (req, res) => {
       available, default_fuel_included 
     } = req.body;
 
+    const fuelTypeMap = {
+      petrol: 'Petrol',
+      diesel: 'Diesel',
+      electric: 'Electric',
+      hybrid: 'Hybrid'
+    };
+    const transmissionMap = {
+      automatic: 'Automatic',
+      manual: 'Manual'
+    };
+    const normalizedFuelType = fuelTypeMap[String(fuel_type || '').toLowerCase()] || fuel_type;
+    const normalizedTransmission = transmissionMap[String(transmission || '').toLowerCase()] || transmission;
+
     // Check ownership
     const checkQuery = 'SELECT id FROM vehicles WHERE id = ? AND owner_id = ?';
     const [rows] = await pool.execute(checkQuery, [id, userId]);
@@ -216,7 +242,7 @@ const updateVehicle = async (req, res) => {
     `;
     
     await pool.execute(query, [
-      brand, model, year, fuel_type, transmission, seats, 
+      brand, model, year, normalizedFuelType, normalizedTransmission, seats, 
       price_per_day, with_driver_price, image_url, images || null, description, 
       available ? 1 : 0, default_fuel_included ? 1 : 0, id
     ]);

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
-    role ENUM('traveler', 'driver', 'tour_guide', 'car_owner', 'hotel_owner', 'admin') DEFAULT 'traveler',
+        role ENUM('traveler', 'car_owner', 'hotel_owner', 'driver', 'tour_guide', 'admin') DEFAULT 'traveler',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS vehicles (
     price_per_day DECIMAL(10, 2) NOT NULL,
     with_driver_price DECIMAL(10, 2) NOT NULL,
     image_url VARCHAR(500),
+    images JSON,
+    rating DECIMAL(3, 2) DEFAULT 0.00,
     description TEXT,
     available BOOLEAN DEFAULT TRUE,
     default_fuel_included BOOLEAN DEFAULT FALSE,
@@ -130,6 +132,9 @@ CREATE TABLE IF NOT EXISTS bookings (
     pickup_lat DECIMAL(10, 8) NULL,
     pickup_lng DECIMAL(11, 8) NULL,
     pickup_address VARCHAR(500) NULL,
+    destination_lat DECIMAL(10, 8) NULL,
+    destination_lng DECIMAL(11, 8) NULL,
+    destination_address VARCHAR(500) NULL,
     destination_lat DECIMAL(10, 8) NULL,
     destination_lng DECIMAL(11, 8) NULL,
     destination_address VARCHAR(500) NULL,

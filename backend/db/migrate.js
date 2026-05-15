@@ -37,6 +37,7 @@ async function runMigration() {
         password_hash VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
         phone VARCHAR(20),
+        role ENUM('traveler', 'car_owner', 'hotel_owner', 'driver', 'tour_guide', 'admin') DEFAULT 'traveler',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       );
@@ -73,6 +74,7 @@ async function runMigration() {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS vehicles (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        owner_id INT NULL,
         brand VARCHAR(100) NOT NULL,
         model VARCHAR(100) NOT NULL,
         year INT NOT NULL,
@@ -82,11 +84,14 @@ async function runMigration() {
         price_per_day DECIMAL(10, 2) NOT NULL,
         with_driver_price DECIMAL(10, 2) NOT NULL,
         image_url VARCHAR(500),
+        images JSON,
+        rating DECIMAL(3, 2) DEFAULT 0.00,
         description TEXT,
         available BOOLEAN DEFAULT TRUE,
         default_fuel_included BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
       );
     `);
 
@@ -94,6 +99,7 @@ async function runMigration() {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS drivers (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
         name VARCHAR(255) NOT NULL,
         photo_url VARCHAR(500),
         experience_years INT NOT NULL,
@@ -106,7 +112,8 @@ async function runMigration() {
         available BOOLEAN DEFAULT TRUE,
         price_per_day DECIMAL(10, 2) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       );
     `);
 
@@ -114,6 +121,7 @@ async function runMigration() {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS hotels (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
         name VARCHAR(255) NOT NULL,
         location VARCHAR(500) NOT NULL,
         city VARCHAR(100) NOT NULL,
@@ -125,7 +133,8 @@ async function runMigration() {
         amenities JSON, -- Stores array of amenities
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       );
     `);
 
@@ -133,6 +142,7 @@ async function runMigration() {
     await connection.query(`
       CREATE TABLE IF NOT EXISTS tour_guides (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
         name VARCHAR(255) NOT NULL,
         photo_url VARCHAR(500),
         location VARCHAR(255),
@@ -146,7 +156,8 @@ async function runMigration() {
         bio TEXT,
         available BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       );
     `);
 
@@ -165,6 +176,9 @@ async function runMigration() {
         pickup_lat DECIMAL(10, 8) NULL, -- For vehicle bookings
         pickup_lng DECIMAL(11, 8) NULL, -- For vehicle bookings
         pickup_address VARCHAR(500) NULL, -- For vehicle bookings
+        destination_lat DECIMAL(10, 8) NULL,
+        destination_lng DECIMAL(11, 8) NULL,
+        destination_address VARCHAR(500) NULL,
         total_price DECIMAL(10, 2) NOT NULL,
         status ENUM('pending', 'confirmed', 'completed', 'cancelled') DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

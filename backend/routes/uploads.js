@@ -133,7 +133,7 @@ router.post('/vehicle/photo', authenticateToken, upload.singlePhoto, async (req,
     console.log('File uploaded:', req.file.filename);
     
     // Return full URL for backend API
-    const photoUrl = `http://localhost:5001/uploads/${req.file.filename}`;
+    const photoUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     
     res.status(200).json({
       success: true,

@@ -8,6 +8,8 @@ import { MapPin, Star, Car, Languages } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { ShimmerSkeleton } from './ui/AnimatedComponents'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 function DriverCard({ driver, index }: { driver: any; index: number }) {
   return (
     <Link href={`/drivers/${driver.id}`}>
@@ -117,7 +119,7 @@ export function FeaturedDrivers() {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/drivers')
+        const response = await fetch(`${API_BASE}/api/drivers`)
         if (response.ok) {
           const data = await response.json()
           setFeaturedDrivers(data.data.slice(0, 3))

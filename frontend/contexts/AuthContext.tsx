@@ -3,6 +3,8 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface User {
   id: string
   name: string
@@ -49,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (token && savedUser) {
           // Verify token by fetching profile
-          const response = await fetch('http://localhost:5001/api/auth/profile', {
+          const response = await fetch(`${API_BASE}/api/auth/profile`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -98,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (userData: any) => {
     const { name, email, phone, password, role, businessData } = userData;
-    const response = await fetch('http://localhost:5001/api/auth/register', {
+    const response = await fetch(`${API_BASE}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -132,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await fetch('http://localhost:5001/api/auth/login', {
+    const response = await fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -177,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5001/api/auth/profile', {
+      const response = await fetch(`${API_BASE}/api/auth/profile`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

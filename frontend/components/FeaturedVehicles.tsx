@@ -8,6 +8,8 @@ import { Car, Users, Fuel, Calendar, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { ShimmerSkeleton } from './ui/AnimatedComponents'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 function VehicleCard({ vehicle, index }: { vehicle: any; index: number }) {
   return (
     <Link href={`/vehicles/${vehicle.id}`}>
@@ -105,7 +107,7 @@ export function FeaturedVehicles() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('http://localhost:5001/api/vehicles')
+    fetch(`${API_BASE}/api/vehicles`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {

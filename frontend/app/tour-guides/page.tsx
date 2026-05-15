@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/Input'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { motion, AnimatePresence } from 'framer-motion'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 function TourGuideCard({ guide, index }: { guide: any; index: number }) {
   return (
     <Link href={`/tour-guides/${guide.id}`}>
@@ -146,7 +148,7 @@ export default function TourGuidesPage() {
   useEffect(() => {
     const fetchGuides = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/tour-guides')
+        const response = await fetch(`${API_BASE}/api/tour-guides`)
         if (response.ok) {
           const data = await response.json()
           setGuides(data.data)

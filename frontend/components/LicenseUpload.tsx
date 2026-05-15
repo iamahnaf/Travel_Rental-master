@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { X, Upload, Check, AlertCircle } from 'lucide-react'
 import { Button } from './ui/Button'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 interface LicenseUploadProps {
   onClose: () => void
   onComplete: () => void
@@ -57,7 +59,7 @@ export function LicenseUpload({ onClose, onComplete }: LicenseUploadProps) {
       const formData = new FormData()
       formData.append('license', file)
 
-      const response = await fetch('http://localhost:5001/api/licenses/upload', {
+      const response = await fetch(`${API_BASE}/api/licenses/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

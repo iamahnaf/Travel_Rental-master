@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IncomingRequests } from '@/components/IncomingRequests';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 interface Vehicle {
   id: number;
   brand: string;
@@ -44,8 +46,8 @@ const initialFormData: VehicleFormData = {
   model: '',
   year: new Date().getFullYear(),
   seats: 4,
-  fuel_type: 'petrol',
-  transmission: 'automatic',
+  fuel_type: 'Petrol',
+  transmission: 'Automatic',
   price_per_day: 0,
   with_driver_price: 0,
   description: '',
@@ -90,7 +92,7 @@ export default function CarOwnerDashboard() {
     try {
       setLoadingVehicles(true);
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5001/api/vehicles/owner/list', {
+      const res = await fetch(`${API_BASE}/api/vehicles/owner/list`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -189,7 +191,7 @@ export default function CarOwnerDashboard() {
         formDataUpload.append('photo', file);
 
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5001/api/uploads/vehicle/photo', {
+        const res = await fetch(`${API_BASE}/api/uploads/vehicle/photo`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -239,8 +241,8 @@ export default function CarOwnerDashboard() {
     try {
       const token = localStorage.getItem('token');
       const url = editingVehicle 
-        ? `http://localhost:5001/api/vehicles/${editingVehicle.id}`
-        : 'http://localhost:5001/api/vehicles';
+        ? `${API_BASE}/api/vehicles/${editingVehicle.id}`
+        : `${API_BASE}/api/vehicles`;
       
       const method = editingVehicle ? 'PUT' : 'POST';
 
@@ -277,7 +279,7 @@ export default function CarOwnerDashboard() {
     setDeleting(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5001/api/vehicles/${vehicleId}`, {
+      const res = await fetch(`${API_BASE}/api/vehicles/${vehicleId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -302,7 +304,7 @@ export default function CarOwnerDashboard() {
   const toggleAvailability = async (vehicle: Vehicle) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5001/api/vehicles/${vehicle.id}`, {
+      const res = await fetch(`${API_BASE}/api/vehicles/${vehicle.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -606,11 +608,10 @@ export default function CarOwnerDashboard() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
-                    <option value="petrol">Petrol</option>
-                    <option value="diesel">Diesel</option>
-                    <option value="electric">Electric</option>
-                    <option value="hybrid">Hybrid</option>
-                    <option value="cng">CNG</option>
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Hybrid">Hybrid</option>
                   </select>
                 </div>
               </div>
@@ -624,8 +625,8 @@ export default function CarOwnerDashboard() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   >
-                    <option value="automatic">Automatic</option>
-                    <option value="manual">Manual</option>
+                    <option value="Automatic">Automatic</option>
+                    <option value="Manual">Manual</option>
                   </select>
                 </div>
                 <div>

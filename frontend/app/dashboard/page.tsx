@@ -10,6 +10,8 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 function BookingCard({ booking, onCancel, onDelete }: { booking: any, onCancel: (id: number) => void, onDelete: (id: number) => void }) {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -227,7 +229,7 @@ export default function DashboardPage() {
         const token = localStorage.getItem('token')
         if (!token) return
 
-        const response = await fetch('http://localhost:5001/api/bookings', {
+        const response = await fetch(`${API_BASE}/api/bookings`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -252,7 +254,7 @@ export default function DashboardPage() {
   const handleCancelBooking = async (id: number) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5001/api/bookings/${id}/cancel`, {
+      const response = await fetch(`${API_BASE}/api/bookings/${id}/cancel`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -276,7 +278,7 @@ export default function DashboardPage() {
   const handleDeleteBooking = async (id: number) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5001/api/bookings/${id}`, {
+      const response = await fetch(`${API_BASE}/api/bookings/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
